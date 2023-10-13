@@ -27,10 +27,11 @@ class Player {
         this.x = x;
         this.y = y;
         this.angle = 0;
+        this.color = color;
         this.update = function () {
             var ctx = gameWindow.context;
-            ctx.fillStyle = "blue";
-            ctx.fillRect(this.x - (this.width / 2), this.y - (this.height / 2), this.width, this.height);
+            //ctx.fillStyle = "blue";
+            //ctx.fillRect(this.x - (this.width / 2), this.y - (this.height / 2), this.width, this.height);
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle * Math.PI / 180);
@@ -41,7 +42,7 @@ class Player {
             ctx.lineTo(this.width / 2, this.height / 2);
             ctx.lineTo(this.width / -2, this.height / 2);
             ctx.closePath();
-            ctx.fillStyle = color;
+            ctx.fillStyle = this.color;
             ctx.fill();
             ctx.restore();
         };
