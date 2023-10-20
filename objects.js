@@ -11,7 +11,7 @@ class GameObject {
             //ctx.translate(this.x, this.y);
             //ctx.rotate(this.angle * Math.PI / 180);
             ctx.fillStyle = color;
-            ctx.fillRect(x, y, width, height);
+            ctx.fillRect(this.x, this.y, this.width, this.height);
             //ctx.restore();
         };
     }
