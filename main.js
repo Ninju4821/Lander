@@ -3,6 +3,8 @@ var speedUpdates = true;
 var startTime;
 var endTime;
 var getTime;
+var flips;
+var flipAngle;
 
 var gameWindow = {
     canvas : document.createElement("canvas"),
@@ -32,6 +34,7 @@ var gameWindow = {
 function init () {
     startTime = new Date();
     getTime = true;
+    flips = 0;
     gameWindow.start();
     square = new Player(24, 40, "grey", 150, 120);
     ground = new GameObject(gameWindow.canvas.width, 5, "black", 0, gameWindow.canvas.height - 5);
@@ -42,6 +45,7 @@ function init () {
     square.angle = Math.random() > 0.5 ? Math.random() * 75 : Math.random() * -75;
     square.speedX = Math.random() > 0.5 ? Math.random() * 8 : Math.random() * -8;
     square.torque = Math.random() > 0.5 ? Math.random() * 1 : Math.random() * -1;
+    flipAngle = square.angle;
     var positionXRandNum;
     do {
         positionXRandNum = Math.random() * gameWindow.canvas.width - 15;
@@ -99,6 +103,14 @@ function Update () {
     if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162) }
     if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055 }
     if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055 }
+    flipAngle += square.torque;
+    if (flipAngle > 360) {
+        flipAngle -= 360;
+        flips += 1;
+    } else if (flipAngle < -360) {
+        flipAngle += 360;
+        flips += 1;
+    }
     angleText.changeText("Angle: " + String(Math.round(square.angle * 10) / 10) + " degrees");
     speed = speedUpdates ? Math.round((Math.sqrt(Math.pow(square.speedY, 2) + Math.pow(square.speedX, 2))) * 10) / 10 : speed;
     speedText.changeText("Speed: " + String(speed) + "m/s");
@@ -119,6 +131,7 @@ function Update () {
                 getTime = false;
             }
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
+            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips);
             console.log("Win");
             square.speedX = 0;
             square.speedY = 0;
@@ -132,6 +145,7 @@ function Update () {
                 getTime = false;
             }
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
+            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips);
             square.color = "red";
             square.speedX = 0;
             square.speedY = 0;
