@@ -1,5 +1,8 @@
-const gravity = 0.081;
+const gravity = 0.061;
 var speedUpdates = true;
+var startTime;
+var endTime;
+var getTime;
 
 var gameWindow = {
     canvas : document.createElement("canvas"),
@@ -27,6 +30,8 @@ var gameWindow = {
 }
 
 function init () {
+    startTime = new Date();
+    getTime = true;
     gameWindow.start();
     square = new Player(24, 40, "grey", 150, 120);
     ground = new GameObject(gameWindow.canvas.width, 5, "black", 0, gameWindow.canvas.height - 5);
@@ -61,9 +66,9 @@ function loop () {
     path1.x = square.x + square.speedX * 10;
     path2.x = path1.x + square.speedX * 10;
     path3.x = path2.x + square.speedX * 10;
-    path1.y = square.y + square.speedY * 10;
-    path2.y = path1.y + square.speedY * 10;
-    path3.y = path2.y + square.speedY * 10;
+    path1.y = square.y + (square.speedY + (gravity * 1)) * 10;
+    path2.y = path1.y + (square.speedY + (gravity * 2)) * 10;
+    path3.y = path2.y + (square.speedY + (gravity * 3)) * 10;
     if (path1.x > gameWindow.canvas.width) {
         path1.x -= gameWindow.canvas.width;
     } else if (path1.x < 0) {
@@ -109,6 +114,11 @@ function Update () {
         if (speed < 8 && Math.abs(square.angle) < 16) {
             let score = ((8 - speed + (16 - Math.abs(square.angle))) / 24) * 100;
             document.getElementById("score_text").innerHTML = "Landing Score: " + String(Math.round(score * 10) / 10);
+            if (getTime) {
+                endTime = new Date();
+                getTime = false;
+            }
+            document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
             console.log("Win");
             square.speedX = 0;
             square.speedY = 0;
@@ -117,6 +127,11 @@ function Update () {
         } else {
             let score = Math.min(speed, Math.abs(square.angle)) / 180 * 100;
             document.getElementById("score_text").innerHTML = "Crash Score: " + String(Math.round(score * 10) / 10);
+            if (getTime) {
+                endTime = new Date();
+                getTime = false;
+            }
+            document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
             square.color = "red";
             square.speedX = 0;
             square.speedY = 0;
