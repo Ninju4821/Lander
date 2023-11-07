@@ -60,6 +60,8 @@ function init () {
     path1 = new GameObject(5, 5, "grey", 0, 0);
     path2 = new GameObject(5, 5, "grey", 0, 0);
     path3 = new GameObject(5, 5, "grey", 0, 0);
+
+    confettiObjs = [];
 }
 
 function loop () {
@@ -96,10 +98,18 @@ function loop () {
     path1.update();
     path2.update();
     path3.update();
+    confettiObjs.forEach(confetti => {
+        confetti.newPos();
+        confetti.update();
+    });
 }
 
 function Update () {
     square.speedY += gravity;
+    confettiObjs.forEach(confetti => {
+        confetti.speedY += gravity;
+        confetti.speedX *= 0.95;
+    })
     if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162) }
     if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055 }
     if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055 }
@@ -107,9 +117,46 @@ function Update () {
     if (flipAngle > 360) {
         flipAngle -= 360;
         flips += 1;
+        startingLength = confettiObjs.length;
+        for (let i = startingLength; i < startingLength + 50; i++) {
+            let color;
+            if (i % 3 == 0) {
+                color = "blue";
+            } else if (i % 2 == 0) {
+                color = "green";
+            } else {
+                color = "red";
+            }
+            confettiObjs.push(new Player(4, 4, color, square.x, square.y));
+            confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
+            confettiObjs[i].speedY = Math.random() * -10;
+            confettiObjs[i].angle = Math.random() * 360;
+            confettiObjs[i].torque = i % 2 == 0 ? Math.random() * 25 : Math.random() * -25;
+        }
     } else if (flipAngle < -360) {
         flipAngle += 360;
         flips += 1;
+        startingLength = confettiObjs.length;
+        for (let i = startingLength; i < startingLength + 50; i++) {
+            let color;
+            if (i % 3 == 0) {
+                color = "blue";
+            } else if (i % 2 == 0) {
+                color = "green";
+            } else {
+                color = "red";
+            }
+            confettiObjs.push(new Player(4, 4, color, square.x, square.y));
+            confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
+            confettiObjs[i].speedY = Math.random() * -10;
+            confettiObjs[i].angle = Math.random() * 360;
+            confettiObjs[i].torque = i % 2 == 0 ? Math.random() * 25 : Math.random() * -25;
+            if (i == 500) {
+                confettiObjs[i].color = "orange";
+                confettiObjs[i].width = 50;
+                confettiObjs[i].height = 50;
+            }
+        }
     }
     angleText.changeText("Angle: " + String(Math.round(square.angle * 10) / 10) + " degrees");
     speed = speedUpdates ? Math.round((Math.sqrt(Math.pow(square.speedY, 2) + Math.pow(square.speedX, 2))) * 10) / 10 : speed;
@@ -121,6 +168,14 @@ function Update () {
     } else if (square.x < 0) {
         square.x += gameWindow.canvas.width;
     }
+    confettiObjs.forEach(confetti => {
+        if (confetti.crashWith(ground) || confetti.y > gameWindow.canvas.height) {
+            index = confettiObjs.indexOf(confetti);
+            if (index > -1) { // only splice array when item is found
+                confettiObjs.splice(index, 1); // 2nd parameter means remove one item only
+            }
+        }
+    })
     if (square.crashWith(ground) || square.y > gameWindow.canvas.height) {
         document.getElementById("info_div").style.display = "block";
         if (speed < 8 && Math.abs(square.angle) < 16) {
