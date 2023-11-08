@@ -1,20 +1,30 @@
 const gravity = 0.061;
-var speedUpdates = true;
-var startTime;
-var endTime;
-var getTime;
-var flips;
-var flipAngle;
+var speedUpdates = true; //Used to stop speed from changing after the landing
+var startTime; //Run start time
+var endTime; //Run end time
+var getTime; //Used to stop the end time from changing after the landing
+var flips; //How many flips have been done?
+var flipAngle; //Tracks the angle for the flip counter
 
+//Holds the game window information
 var gameWindow = {
-    canvas : document.createElement("canvas"),
+    canvas : document.createElement("canvas"), //Holds the canvas HTML element
     start : function() {
-        this.canvas.width = window.innerWidth - 5;
-        this.canvas.height = window.innerHeight - 5;
+        //Fit the canvas to the screen
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight - 1;
+        //Get the context from the canvas
         this.context = this.canvas.getContext("2d");
+
+        //Put the canvas at the top of the body
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+
+        //Start looping at 60fps
         this.interval = setInterval(loop, 16);
+        //Track the frame number
         this.frameNo = 0;
+
+        //Listen for keyboard input
         window.addEventListener('keydown', function (e) {
           gameWindow.keys = (gameWindow.keys || []);
           gameWindow.keys[e.keyCode] = true;
@@ -23,145 +33,192 @@ var gameWindow = {
           gameWindow.keys[e.keyCode] = false;
         })
     },
-    clear : function() {
+    clear : function() { //CLear the canvas
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
-    stop : function() {
+    stop : function() { //Stop looping
         clearInterval(this.interval);
     }
 }
 
 function init () {
-    startTime = new Date();
-    getTime = true;
-    flips = 0;
-    gameWindow.start();
-    square = new Player(24, 40, "grey", 150, 120);
-    ground = new GameObject(gameWindow.canvas.width, 5, "black", 0, gameWindow.canvas.height - 5);
-    angleText = new Text("20px Consolas", "black", 10, 50);
-    speedText = new Text("20 px Consolas", "black", 10, 80);
-    heightText = new Text("20px Consolas", "black", 10, 110);
+    startTime = new Date(); //Get the run start time
+    getTime = true; //Allow the game to end the run
 
-    square.angle = Math.random() > 0.5 ? Math.random() * 75 : Math.random() * -75;
-    square.speedX = Math.random() > 0.5 ? Math.random() * 8 : Math.random() * -8;
-    square.torque = Math.random() > 0.5 ? Math.random() * 1 : Math.random() * -1;
-    flipAngle = square.angle;
+    flips = 0; //Reset flip count
+
+    gameWindow.start(); //Re-initialize the game window
+
+    square = new Player(24, 40, "grey", 150, 120); //Make the player
+    ground = new GameObject(gameWindow.canvas.width, 12, "rgb(65, 65, 65)", 0, gameWindow.canvas.height - 12); //Make the ground
+    //Make the text objects
+    angleText = new Text("20px Consolas", "white", 10, 50);
+    speedText = new Text("20 px Consolas", "white", 10, 80);
+    heightText = new Text("20px Consolas", "white", 10, 110);
+
+    //Randomize the player position, rotation, starting speed, and starting torque
+    square.angle = Math.random() > 0.5 ? Math.random() * 75 : Math.random() * -75; //Angle
+    square.speedX = Math.random() > 0.5 ? Math.random() * 8 : Math.random() * -8; //Speed
+    square.torque = Math.random() > 0.5 ? Math.random() * 1 : Math.random() * -1; //Torque
+    flipAngle = square.angle; //Set the flip angle to match the starting angle
+    //Position
     var positionXRandNum;
     do {
         positionXRandNum = Math.random() * gameWindow.canvas.width - 15;
     } while (positionXRandNum < 15)
-
     square.x = positionXRandNum;
 
-    speedUpdates = true;
+    speedUpdates = true; //Allow the game to update the player speed total
 
-    document.getElementById("info_div").style.display = "none";
+    document.getElementById("info_div").style.display = "none"; //Make the landing info clear
 
-    path1 = new GameObject(5, 5, "grey", 0, 0);
-    path2 = new GameObject(5, 5, "grey", 0, 0);
-    path3 = new GameObject(5, 5, "grey", 0, 0);
+    //Path variables
+    pathPoints = [];
+    for (let i = 0; i < 80; i++) {
+        pathPoints.push(new PathPoint(0, 0, false));
+    }
+    path = new Path(pathPoints, "white");
 
+    //Confetti variable
     confettiObjs = [];
+
+    stars = [];
+    for (let i = 0; i < 50; i++) {
+        stars.push(new GameObject(1, 1, "white", Math.random() * gameWindow.canvas.width, Math.random() * gameWindow.canvas.height));
+    }
 }
 
-function loop () {
+function loop () { //Internal loop
+    //Clear the game window
     gameWindow.clear();
-    gameWindow.frameNo += 1;
+    gameWindow.frameNo += 1; //Add one to the frame counter
+
+    //Run logic loop
     Update();
-    square.newPos();
-    path1.x = square.x + square.speedX * 10;
-    path2.x = path1.x + square.speedX * 10;
-    path3.x = path2.x + square.speedX * 10;
-    path1.y = square.y + (square.speedY + (gravity * 1)) * 10;
-    path2.y = path1.y + (square.speedY + (gravity * 2)) * 10;
-    path3.y = path2.y + (square.speedY + (gravity * 3)) * 10;
-    if (path1.x > gameWindow.canvas.width) {
-        path1.x -= gameWindow.canvas.width;
-    } else if (path1.x < 0) {
-        path1.x += gameWindow.canvas.width;
-    }
-    if (path2.x > gameWindow.canvas.width) {
-        path2.x -= gameWindow.canvas.width;
-    } else if (path2.x < 0) {
-        path2.x += gameWindow.canvas.width;
-    }
-    if (path3.x > gameWindow.canvas.width) {
-        path3.x -= gameWindow.canvas.width;
-    } else if (path3.x < 0) {
-        path3.x += gameWindow.canvas.width;
-    }
-    square.update();
-    ground.update();
-    angleText.update();
-    speedText.update();
-    heightText.update();
-    path1.update();
-    path2.update();
-    path3.update();
+    stars.forEach(star => {
+        star.update();
+    });
+    //Redraw the path
+    path.update();
+    //Update each confettis' internal position and redraw
     confettiObjs.forEach(confetti => {
         confetti.newPos();
         confetti.update();
     });
+    //Update player internal position and redraw (Do second to last to draw over path & confetti)
+    square.newPos();
+    square.update();
+    //Redraw the ground (Do last to be on top)
+    ground.update();
+    //Redraw the text objects
+    angleText.update();
+    speedText.update();
+    heightText.update();
 }
 
-function Update () {
+function Update () { //Logic loop
+    //Apply gravity to the player
     square.speedY += gravity;
-    confettiObjs.forEach(confetti => {
-        confetti.speedY += gravity;
-        confetti.speedX *= 0.95;
-    })
+
+    confettiObjs.forEach(confetti => { //For each confetti
+        confetti.speedY += gravity; //Apply gravity
+        confetti.speedX *= 0.99; //Slow down it's horizontal speed
+
+        //Loop across the screen
+        if (confetti.x < 0) {
+            confetti.x += gameWindow.canvas.width;
+        }
+        if (confetti.x > gameWindow.canvas.width) {
+            confetti.x -= gameWindow.canvas.width;
+        }
+    });
+
+    //Apply user input to the Lander
     if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162) }
     if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055 }
     if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055 }
-    flipAngle += square.torque;
+
+    flipAngle += square.torque; //Add the current torque to the flip tracker angle
+
+    //Check for flips
     if (flipAngle > 360) {
-        flipAngle -= 360;
-        flips += 1;
+        flipAngle -= 360; //Undo the flip
+        flips += 1; //Count the flip
+
+        //Set the starting length to the current number of confettis
         startingLength = confettiObjs.length;
+        //Do 50 times, starting at startingLength
         for (let i = startingLength; i < startingLength + 50; i++) {
+            //Set color to be red, blue, green, or magenta randomly
             let color;
-            if (i % 3 == 0) {
-                color = "blue";
-            } else if (i % 2 == 0) {
-                color = "green";
+            let rand = Math.random();
+            if (rand < 0.25) {
+                color = "rgb(0, 0, 220)";
+            } else if (rand < 0.5) {
+                color = "rgb(0, 220, 0)";
+            } else if (rand < 0.75) {
+                color = "rgb(220, 0, 180)"
             } else {
-                color = "red";
+                color = "rgb(200, 0, 0)";
             }
+            //Add new confetti to the array at player's position
             confettiObjs.push(new Player(4, 4, color, square.x, square.y));
+            //Give it random x speed (half negative, half positive) and random upwards y speed
             confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
             confettiObjs[i].speedY = Math.random() * -10;
+            //Start at a random angle with random torque (half positive, half negative)
             confettiObjs[i].angle = Math.random() * 360;
             confettiObjs[i].torque = i % 2 == 0 ? Math.random() * 25 : Math.random() * -25;
         }
     } else if (flipAngle < -360) {
-        flipAngle += 360;
+        flipAngle += 360; //Only different line. Same purpose
         flips += 1;
         startingLength = confettiObjs.length;
         for (let i = startingLength; i < startingLength + 50; i++) {
             let color;
-            if (i % 3 == 0) {
-                color = "blue";
-            } else if (i % 2 == 0) {
-                color = "green";
+            let rand = Math.random();
+            if (rand < 0.25) {
+                color = "rgb(0, 0, 220)";
+            } else if (rand < 0.5) {
+                color = "rgb(0, 220, 0)";
+            } else if (rand < 0.75) {
+                color = "rgb(220, 0, 180)"
             } else {
-                color = "red";
+                color = "rgb(200, 0, 0)";
             }
             confettiObjs.push(new Player(4, 4, color, square.x, square.y));
             confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
             confettiObjs[i].speedY = Math.random() * -10;
             confettiObjs[i].angle = Math.random() * 360;
             confettiObjs[i].torque = i % 2 == 0 ? Math.random() * 25 : Math.random() * -25;
-            if (i == 500) {
-                confettiObjs[i].color = "orange";
-                confettiObjs[i].width = 50;
-                confettiObjs[i].height = 50;
-            }
         }
     }
+
+    for (let i = 0; i < pathPoints.length; i++) {
+        if (i != 0) {
+            pathPoints[i] = new PathPoint(pathPoints[i - 1].x + square.speedX * 5, pathPoints[i - 1].y + (square.speedY + (gravity * i * i)) * 5, false)
+        } else {
+            pathPoints[i] = new PathPoint(square.x, square.y, false);
+        }
+        if (pathPoints[i].x > gameWindow.canvas.width) {
+            pathPoints[i].x = gameWindow.canvas.width;
+            i++;
+            pathPoints[i] = new PathPoint(0, pathPoints[i - 1].y, true);
+        } else if (pathPoints[i].x < 0) {
+            pathPoints[i].x = 0;
+            i++;
+            pathPoints[i] = new PathPoint(gameWindow.canvas.width, pathPoints[i - 1].y + (square.speedY + (gravity * i * i)) * 5, true);
+        }
+    }
+    //Update angle text
     angleText.changeText("Angle: " + String(Math.round(square.angle * 10) / 10) + " degrees");
+    //Get total speed if speedUpdates are on
     speed = speedUpdates ? Math.round((Math.sqrt(Math.pow(square.speedY, 2) + Math.pow(square.speedX, 2))) * 10) / 10 : speed;
+    //Update speed text
     speedText.changeText("Speed: " + String(speed) + "m/s");
+    //Get height from ground
     height = Math.round((gameWindow.canvas.height - 5 - square.y) / 20 * 100) / 100;
+    //Update height text
     heightText.changeText("Height: " + String(height) + "m");
     if (square.x > gameWindow.canvas.width) {
         square.x -= gameWindow.canvas.width;
@@ -214,6 +271,11 @@ function Update () {
             init();
         }
     }
+
+    //Keep game window the right size
+    gameWindow.canvas.width = window.innerWidth;
+    gameWindow.canvas.height = window.innerHeight - 1;
+    ground.width = gameWindow.canvas.width; 
 }
 
 function everyinterval(n) {

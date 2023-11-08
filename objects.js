@@ -82,6 +82,33 @@ class Player {
     }
 }
 
+class Path {
+    constructor(points, color) {
+        this.points = points;
+        this.update = function () {
+            var ctx = gameWindow.context;
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            this.points.forEach(point => {
+                if (!point.isEdge) {
+                    ctx.lineTo(point.x, point.y);
+                } else {
+                    ctx.moveTo(point.x, point.y);
+                }
+            });
+            ctx.stroke();
+        };
+    }
+}
+
+class PathPoint {
+    constructor(x, y, isEdge) {
+        this.x = x;
+        this.y = y;
+        this.isEdge = isEdge;
+    }
+}
+
 class Text {
     constructor(font, color, x, y) {
         this.x = x;
