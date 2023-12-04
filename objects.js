@@ -30,8 +30,6 @@ class Player {
         this.color = color;
         this.update = function () {
             var ctx = gameWindow.context;
-            //ctx.fillStyle = "blue";
-            //ctx.fillRect(this.x - (this.width / 2), this.y - (this.height / 2), this.width, this.height);
             ctx.save();
             ctx.translate(this.x, this.y);
             ctx.rotate(this.angle * Math.PI / 180);
@@ -45,6 +43,8 @@ class Player {
             ctx.fillStyle = this.color;
             ctx.fill();
             ctx.restore();
+            ctx.fillStyle = "blue";
+            ctx.fillRect(this.x - ((Math.sin(this.angle * Math.PI / 180) * this.width) / 2), this.y - ((Math.cos(this.angle * Math.PI / 180) * this.height) / 2), (Math.cos(this.angle * Math.PI / 180) * this.width) + this.width, (Math.cos(this.angle * Math.PI / 180) * this.height));
         };
         this.addSpeed = function(speed) {
             this.speedX += speed * Math.sin(this.angle * Math.PI / 180);

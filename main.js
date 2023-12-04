@@ -5,6 +5,8 @@ var endTime; //Run end time
 var getTime; //Used to stop the end time from changing after the landing
 var flips; //How many flips have been done?
 var flipAngle; //Tracks the angle for the flip counter
+var loops = 0;
+var doConfetti = true; //Should confetti spawn? Disabled by "c"
 
 //Holds the game window information
 var gameWindow = {
@@ -46,6 +48,7 @@ function init () {
     getTime = true; //Allow the game to end the run
 
     flips = 0; //Reset flip count
+    loops = 0;
 
     gameWindow.start(); //Re-initialize the game window
 
@@ -118,7 +121,7 @@ function loop () { //Internal loop
 
 function Update () { //Logic loop
     //Apply gravity to the player
-    square.speedY += gravity;
+    //square.speedY += gravity;
 
     confettiObjs.forEach(confetti => { //For each confetti
         confetti.speedY += gravity; //Apply gravity
@@ -137,6 +140,7 @@ function Update () { //Logic loop
     if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162) }
     if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055 }
     if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055 }
+    if (gameWindow.keys && (gameWindow.keys[67])) {confettiObjs = []; doConfetti = false;}
 
     flipAngle += square.torque; //Add the current torque to the flip tracker angle
 
@@ -145,52 +149,56 @@ function Update () { //Logic loop
         flipAngle -= 360; //Undo the flip
         flips += 1; //Count the flip
 
-        //Set the starting length to the current number of confettis
-        startingLength = confettiObjs.length;
-        //Do 50 times, starting at startingLength
-        for (let i = startingLength; i < startingLength + 50; i++) {
-            //Set color to be red, blue, green, or magenta randomly
-            let color;
-            let rand = Math.random();
-            if (rand < 0.25) {
-                color = "rgb(0, 0, 220)";
-            } else if (rand < 0.5) {
-                color = "rgb(0, 220, 0)";
-            } else if (rand < 0.75) {
-                color = "rgb(220, 0, 180)"
-            } else {
-                color = "rgb(200, 0, 0)";
+        if (doConfetti) {
+            //Set the starting length to the current number of confettis
+            startingLength = confettiObjs.length;
+            //Do 50 times, starting at startingLength
+            for (let i = startingLength; i < startingLength + 50; i++) {
+                //Set color to be red, blue, green, or magenta randomly
+                let color;
+                let rand = Math.random();
+                if (rand < 0.25) {
+                    color = "rgb(0, 0, 220)";
+                } else if (rand < 0.5) {
+                    color = "rgb(0, 220, 0)";
+                } else if (rand < 0.75) {
+                    color = "rgb(220, 0, 180)"
+                } else {
+                    color = "rgb(200, 0, 0)";
+                }
+                //Add new confetti to the array at player's position
+                confettiObjs.push(new Player(4, 4, color, square.x, square.y));
+                //Give it random x speed (half negative, half positive) and random upwards y speed
+                confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
+                confettiObjs[i].speedY = Math.random() * -10;
+                //Start at a random angle with random torque (half positive, half negative)
+                confettiObjs[i].angle = Math.random() * 360;
+                confettiObjs[i].torque = i % 2 == 0 ? Math.random() * 25 : Math.random() * -25;
             }
-            //Add new confetti to the array at player's position
-            confettiObjs.push(new Player(4, 4, color, square.x, square.y));
-            //Give it random x speed (half negative, half positive) and random upwards y speed
-            confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
-            confettiObjs[i].speedY = Math.random() * -10;
-            //Start at a random angle with random torque (half positive, half negative)
-            confettiObjs[i].angle = Math.random() * 360;
-            confettiObjs[i].torque = i % 2 == 0 ? Math.random() * 25 : Math.random() * -25;
         }
     } else if (flipAngle < -360) {
         flipAngle += 360; //Only different line. Same purpose
         flips += 1;
         startingLength = confettiObjs.length;
-        for (let i = startingLength; i < startingLength + 50; i++) {
-            let color;
-            let rand = Math.random();
-            if (rand < 0.25) {
-                color = "rgb(0, 0, 220)";
-            } else if (rand < 0.5) {
-                color = "rgb(0, 220, 0)";
-            } else if (rand < 0.75) {
-                color = "rgb(220, 0, 180)"
-            } else {
-                color = "rgb(200, 0, 0)";
+        if (doConfetti) {
+            for (let i = startingLength; i < startingLength + 50; i++) {
+                let color;
+                let rand = Math.random();
+                if (rand < 0.25) {
+                    color = "rgb(0, 0, 220)";
+                } else if (rand < 0.5) {
+                    color = "rgb(0, 220, 0)";
+                } else if (rand < 0.75) {
+                    color = "rgb(220, 0, 180)"
+                } else {
+                    color = "rgb(200, 0, 0)";
+                }
+                confettiObjs.push(new Player(4, 4, color, square.x, square.y));
+                confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
+                confettiObjs[i].speedY = Math.random() * -10;
+                confettiObjs[i].angle = Math.random() * 360;
+                confettiObjs[i].torque = i % 2 == 0 ? Math.random() * 25 : Math.random() * -25;
             }
-            confettiObjs.push(new Player(4, 4, color, square.x, square.y));
-            confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
-            confettiObjs[i].speedY = Math.random() * -10;
-            confettiObjs[i].angle = Math.random() * 360;
-            confettiObjs[i].torque = i % 2 == 0 ? Math.random() * 25 : Math.random() * -25;
         }
     }
 
@@ -222,8 +230,10 @@ function Update () { //Logic loop
     heightText.changeText("Height: " + String(height) + "m");
     if (square.x > gameWindow.canvas.width) {
         square.x -= gameWindow.canvas.width;
+        loops++;
     } else if (square.x < 0) {
         square.x += gameWindow.canvas.width;
+        loops--;
     }
     confettiObjs.forEach(confetti => {
         if (confetti.crashWith(ground) || confetti.y > gameWindow.canvas.height) {
@@ -243,7 +253,8 @@ function Update () { //Logic loop
                 getTime = false;
             }
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
-            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips);
+            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled by pressing \"c\". Reload to reenable confetti)");
+            document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
             console.log("Win");
             square.speedX = 0;
             square.speedY = 0;
@@ -257,7 +268,8 @@ function Update () { //Logic loop
                 getTime = false;
             }
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
-            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips);
+            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled by pressing \"c\". Reload to reenable confetti)");
+            document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
             square.color = "red";
             square.speedX = 0;
             square.speedY = 0;
