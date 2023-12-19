@@ -44,7 +44,9 @@ class Player {
             ctx.fill();
             ctx.restore();
             ctx.fillStyle = "blue";
-            ctx.fillRect(this.x - ((Math.sin(this.angle * Math.PI / 180) * this.width) / 2), this.y - ((Math.cos(this.angle * Math.PI / 180) * this.height) / 2), (Math.cos(this.angle * Math.PI / 180) * this.width) + this.width, (Math.cos(this.angle * Math.PI / 180) * this.height));
+            var hitboxWidth = Math.sin(Math.abs(this.angle) * Math.PI / 180) * (this.height * 1.5 - this.width) + this.width;
+            var hitboxHeight = Math.sin(Math.abs(this.angle) * Math.PI / 180) * (this.width - this.height * 1.5) + this.height * 1.5;
+            ctx.fillRect(this.x - hitboxWidth / 2, this.y - hitboxHeight / 2, hitboxWidth, hitboxHeight);
         };
         this.addSpeed = function(speed) {
             this.speedX += speed * Math.sin(this.angle * Math.PI / 180);
