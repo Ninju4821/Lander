@@ -43,11 +43,11 @@ class Player {
             ctx.fillStyle = this.color;
             ctx.fill();
             ctx.restore();
-            ctx.fillStyle = "blue";
+            /*ctx.fillStyle = "blue";
             var hitboxWidth = Math.sin(Math.abs(this.angle) * Math.PI / 180) * (this.height * 1.5 - this.width) + this.width;
             var hitboxHeight = Math.abs(Math.cos(Math.abs(this.angle) * Math.PI / 180) * (this.height * 1.5 - this.width)) + this.width;
             //Math.sin(Math.abs(this.angle) * Math.PI / 180) * (this.width - this.height * 1.5) + this.height * 1.5;
-            ctx.fillRect(this.x - hitboxWidth / 2 + Math.sin(this.angle * Math.PI / 180) * 10, this.y - hitboxHeight / 2 - Math.cos(this.angle * Math.PI / 180) * 10, hitboxWidth, hitboxHeight);
+            ctx.fillRect(this.x - hitboxWidth / 2 + Math.sin(this.angle * Math.PI / 180) * 10, this.y - hitboxHeight / 2 - Math.cos(this.angle * Math.PI / 180) * 10, hitboxWidth, hitboxHeight);*/
         };
         this.addSpeed = function(speed) {
             this.speedX += speed * Math.sin(this.angle * Math.PI / 180);
