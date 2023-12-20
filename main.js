@@ -121,7 +121,7 @@ function loop () { //Internal loop
 
 function Update () { //Logic loop
     //Apply gravity to the player
-    //square.speedY += gravity;
+    square.speedY += gravity;
 
     confettiObjs.forEach(confetti => { //For each confetti
         confetti.speedY += gravity; //Apply gravity

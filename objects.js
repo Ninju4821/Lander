@@ -45,8 +45,9 @@ class Player {
             ctx.restore();
             ctx.fillStyle = "blue";
             var hitboxWidth = Math.sin(Math.abs(this.angle) * Math.PI / 180) * (this.height * 1.5 - this.width) + this.width;
-            var hitboxHeight = Math.sin(Math.abs(this.angle) * Math.PI / 180) * (this.width - this.height * 1.5) + this.height * 1.5;
-            ctx.fillRect(this.x - hitboxWidth / 2, this.y - hitboxHeight / 2, hitboxWidth, hitboxHeight);
+            var hitboxHeight = Math.abs(Math.cos(Math.abs(this.angle) * Math.PI / 180) * (this.height * 1.5 - this.width)) + this.width;
+            //Math.sin(Math.abs(this.angle) * Math.PI / 180) * (this.width - this.height * 1.5) + this.height * 1.5;
+            ctx.fillRect(this.x - hitboxWidth / 2 + Math.sin(this.angle * Math.PI / 180) * 10, this.y - hitboxHeight / 2 - Math.cos(this.angle * Math.PI / 180) * 10, hitboxWidth, hitboxHeight);
         };
         this.addSpeed = function(speed) {
             this.speedX += speed * Math.sin(this.angle * Math.PI / 180);
@@ -64,10 +65,12 @@ class Player {
             }
         };
         this.crashWith = function (otherobj) {
-            var myleft = this.x - (this.width / 2);
-            var myright = this.x + (this.width / 2);
-            var mytop = this.y - (this.height / 2);
-            var mybottom = this.y + (this.height / 2);
+            var hitboxWidth = Math.sin(Math.abs(this.angle) * Math.PI / 180) * (this.height * 1.5 - this.width) + this.width;
+            var hitboxHeight = Math.sin(Math.abs(this.angle) * Math.PI / 180) * (this.width - this.height * 1.5) + this.height * 1.5;
+            var myleft = this.x - hitboxWidth / 2 + Math.sin(this.angle * Math.PI / 180) * 10
+            var myright = myleft + hitboxWidth;
+            var mytop = this.y - hitboxHeight / 2 - Math.cos(this.angle * Math.PI / 180) * 10;
+            var mybottom = mytop + hitboxHeight;
             var otherleft = otherobj.x;
             var otherright = otherobj.x + (otherobj.width);
             var othertop = otherobj.y;
