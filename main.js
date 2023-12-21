@@ -2,7 +2,7 @@ const gravity = 0.061;
 var speedUpdates = true; //Used to stop speed from changing after the landing
 var startTime; //Run start time
 var endTime; //Run end time
-var getTime; //Used to stop the end time from changing after the landing
+var getTime; //Bool used to stop the end time from changing after the landing
 var flips; //How many flips have been done?
 var flipAngle; //Tracks the angle for the flip counter
 var loops = 0;
@@ -98,21 +98,28 @@ function loop () { //Internal loop
 
     //Run logic loop
     Update();
+
+    //Redraw background stars
     stars.forEach(star => {
         star.update();
     });
+
     //Redraw the path
     path.update();
+
     //Update each confettis' internal position and redraw
     confettiObjs.forEach(confetti => {
         confetti.newPos();
         confetti.update();
     });
+
     //Update player internal position and redraw (Do second to last to draw over path & confetti)
     square.newPos();
     square.update();
+
     //Redraw the ground (Do last to be on top)
     ground.update();
+
     //Redraw the text objects
     angleText.update();
     speedText.update();
@@ -228,6 +235,8 @@ function Update () { //Logic loop
     height = Math.round((gameWindow.canvas.height - 5 - square.y) / 20 * 100) / 100;
     //Update height text
     heightText.changeText("Height: " + String(height) + "m");
+
+    //Loop square across screen
     if (square.x > gameWindow.canvas.width) {
         square.x -= gameWindow.canvas.width;
         loops++;
@@ -235,6 +244,8 @@ function Update () { //Logic loop
         square.x += gameWindow.canvas.width;
         loops--;
     }
+
+    //Removes confetti that collides with the ground
     confettiObjs.forEach(confetti => {
         if (confetti.crashWith(ground) || confetti.y > gameWindow.canvas.height) {
             index = confettiObjs.indexOf(confetti);
@@ -243,6 +254,8 @@ function Update () { //Logic loop
             }
         }
     })
+
+    //Checks if lander collides with ground
     if (square.crashWith(ground) || square.y > gameWindow.canvas.height) {
         document.getElementById("info_div").style.display = "block";
         if (speed < 8 && Math.abs(square.angle) < 16) {
