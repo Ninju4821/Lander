@@ -7,6 +7,8 @@ var flips; //How many flips have been done?
 var flipAngle; //Tracks the angle for the flip counter
 var loops = 0;
 var doConfetti = true; //Should confetti spawn? Disabled by "c"
+var doCrashParts = true;
+var drawLander = true;
 
 //Holds the game window information
 var gameWindow = {
@@ -52,10 +54,12 @@ function init () {
 
     gameWindow.start(); //Re-initialize the game window
 
-    square = new Player(24, 40, "grey", 150, 120); //Make the player
+    square = new Player(24, 40, "rgb(120, 120, 120)", 150, 120, true); //Make the player
     ground = new GameObject(gameWindow.canvas.width, 12, "rgb(65, 65, 65)", 0, gameWindow.canvas.height - 12); //Make the ground
     //Make the text objects
     angleText = new Text("20px Consolas", "white", 10, 50);
+    angleArrow = new Arrow(260, 40, "left", 16, "white");
+    accelArrow = new Arrow(260, 40, "none", 4, "black");
     speedText = new Text("20 px Consolas", "white", 10, 80);
     heightText = new Text("20px Consolas", "white", 10, 110);
 
@@ -89,6 +93,10 @@ function init () {
     for (let i = 0; i < 50; i++) {
         stars.push(new GameObject(1, 1, "white", Math.random() * gameWindow.canvas.width, Math.random() * gameWindow.canvas.height));
     }
+
+    crashParts = []; //Will hold the crash parts when summoned
+    doCrashParts = true;
+    drawLander = true;
 }
 
 function loop () { //Internal loop
@@ -105,7 +113,9 @@ function loop () { //Internal loop
     });
 
     //Redraw the path
-    path.update();
+    if (drawLander) {
+        path.update();
+    }
 
     //Update each confettis' internal position and redraw
     confettiObjs.forEach(confetti => {
@@ -115,15 +125,24 @@ function loop () { //Internal loop
 
     //Update player internal position and redraw (Do second to last to draw over path & confetti)
     square.newPos();
-    square.update();
+    if (drawLander) {
+        square.update();
+    }
 
     //Redraw the ground (Do last to be on top)
     ground.update();
 
     //Redraw the text objects
     angleText.update();
+    angleArrow.update();
+    accelArrow.update();
     speedText.update();
     heightText.update();
+
+    crashParts.forEach(part => {
+        part.newPos();
+        part.update();
+    });
 }
 
 function Update () { //Logic loop
@@ -143,10 +162,23 @@ function Update () { //Logic loop
         }
     });
 
-    //Apply user input to the Lander
-    if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162) }
-    if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055 }
-    if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055 }
+    crashParts.forEach(part => {
+        part.speedY += gravity;
+        //part.speedX *= 0.99;
+        //part.torque *= 0.99;
+
+        if (part.x < 0) {
+            part.x += gameWindow.canvas.width;
+        }
+        if (part.x > gameWindow.canvas.width) {
+            part.x -= gameWindow.canvas.width;
+        }
+    })
+
+    //Apply user input to the Lander and set the variables to display jet flames
+    if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162); square.isAccel=true;} else {square.isAccel=false;}
+    if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055; square.isLeftRCS=true; accelArrow.changeDir("right");} else {square.isLeftRCS=false; accelArrow.changeDir("none");}
+    if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055; square.isRightRCS=true; accelArrow.changeDir("left");} else {square.isRightRCS=false;}
     if (gameWindow.keys && (gameWindow.keys[67])) {confettiObjs = []; doConfetti = false;}
 
     flipAngle += square.torque; //Add the current torque to the flip tracker angle
@@ -225,16 +257,6 @@ function Update () { //Logic loop
             pathPoints[i] = new PathPoint(gameWindow.canvas.width, pathPoints[i - 1].y + (square.speedY + (gravity * i * i)) * 5, true);
         }
     }
-    //Update angle text
-    angleText.changeText("Angle: " + String(Math.round(square.angle * 10) / 10) + " degrees");
-    //Get total speed if speedUpdates are on
-    speed = speedUpdates ? Math.round((Math.sqrt(Math.pow(square.speedY, 2) + Math.pow(square.speedX, 2))) * 10) / 10 : speed;
-    //Update speed text
-    speedText.changeText("Speed: " + String(speed) + "m/s");
-    //Get height from ground
-    height = Math.round((gameWindow.canvas.height - 5 - square.y) / 20 * 100) / 100;
-    //Update height text
-    heightText.changeText("Height: " + String(height) + "m");
 
     //Loop square across screen
     if (square.x > gameWindow.canvas.width) {
@@ -251,6 +273,20 @@ function Update () { //Logic loop
             index = confettiObjs.indexOf(confetti);
             if (index > -1) { // only splice array when item is found
                 confettiObjs.splice(index, 1); // 2nd parameter means remove one item only
+            }
+        }
+    })
+
+    crashParts.forEach(part => {
+        if (part.crashWith(ground) || part.y > gameWindow.canvas.height) {
+            index = crashParts.indexOf(part);
+            if (index > -1) {
+                part.y -= (part.y - ground.y) - part.height / -1.8;
+                part.speedY = -part.speedY * 0.65;
+                part.speedX *= 0.75;
+                part.torque *= 0.75;
+                part.torque += part.speedX * 0.8;
+                part.speedX *= 0.7;
             }
         }
     })
@@ -283,11 +319,23 @@ function Update () { //Logic loop
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
             document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled by pressing \"c\". Reload to reenable confetti)");
             document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
-            square.color = "red";
+            if (doCrashParts) {
+                crashParts.push(new CrashPart(24, 20, square.x, square.y - (square.height / 2), false));
+                crashParts.push(new CrashPart(24, 20, square.x, square.y + (square.height / 2), false));
+                crashParts.push(new CrashPart(24, 20, square.x, square.y, true));
+                crashParts.forEach(part => {
+                    part.angle = square.angle;
+                    part.torque = square.torque;
+                    part.speedX = square.speedX + max(0.5, Math.random() * 2) * (Math.random() > 0.5 ? 1 : -1);
+                    part.speedY = min(-square.speedY * 0.65, -max(0.5, Math.random() * 2));
+                });
+                doCrashParts = false;
+            }
             square.speedX = 0;
             square.speedY = 0;
             square.torque = 0;
             speedUpdates = false;
+            drawLander = false;
             console.log("lose");
         }
         if (gameWindow.keys && gameWindow.keys[32]) {
@@ -295,7 +343,26 @@ function Update () { //Logic loop
             document.getElementById("info_div").style.display = "none";
             init();
         }
+        square.isAccel = false;
+        square.isLeftRCS = false;
+        square.isRightRCS = false;
+        accelArrow.changeDir("none");
     }
+
+    //Update angle text
+    angleText.changeText("Angle: " + String(Math.round(square.angle * 10) / 10) + " degrees");
+    angleArrow.changeDir(square.torque > 0 ? "right" : "left");
+    if (square.torque == 0) {
+        angleArrow.changeDir("none");
+    }
+    //Get total speed if speedUpdates are on
+    speed = speedUpdates ? Math.round((Math.sqrt(Math.pow(square.speedY, 2) + Math.pow(square.speedX, 2))) * 10) / 10 : speed;
+    //Update speed text
+    speedText.changeText("Speed: " + String(speed) + "m/s");
+    //Get height from ground
+    height = Math.round((gameWindow.canvas.height - 5 - square.y) / 20 * 100) / 100;
+    //Update height text
+    heightText.changeText("Height: " + String(height) + "m");
 
     //Keep game window the right size
     gameWindow.canvas.width = window.innerWidth;
