@@ -9,6 +9,7 @@ var loops = 0;
 var doConfetti = true; //Should confetti spawn? Disabled by "c"
 var doCrashParts = true;
 var drawLander = true;
+var escDown = false;
 
 //Holds the game window information
 var gameWindow = {
@@ -46,6 +47,21 @@ var gameWindow = {
 }
 
 function init () {
+
+    //Get settings from cookies
+    toggledSettingString = getCookie("toggles");
+    if (toggledSettingString != "") {
+        settingArray = Array.from(toggledSettingString);
+        if (settingArray[0] == "t") {document.getElementById("confetti_check").checked = true;} else {document.getElementById("confetti_check").chekced = false;}
+        if (settingArray[1] == "t") {document.getElementById("music_check").checked = true;} else {document.getElementById("music_check").chekced = false;}
+        if (settingArray[3] == "t") {document.getElementById("simple_shade_check").checked = true;} else {document.getElementById("simple_shade_check").chekced = false;}
+        if (settingArray[4] == "t") {document.getElementById("epilepsy_check").checked = true;} else {document.getElementById("epilepsy_check").chekced = false;}
+    }
+    color1String = getCookie("color1");
+    color2String = getCookie("color2");
+    if (color1String != "" ) {document.getElementById("color1_picker").value = color1String}
+    if (color2String != "" ) {document.getElementById("color2_picker").value = color2String}
+
     startTime = new Date(); //Get the run start time
     getTime = true; //Allow the game to end the run
 
@@ -54,8 +70,8 @@ function init () {
 
     gameWindow.start(); //Re-initialize the game window
 
-    square = new Player(24, 40, "rgb(120, 120, 120)", 150, 120, true); //Make the player
-    ground = new GameObject(gameWindow.canvas.width, 12, "rgb(65, 65, 65)", 0, gameWindow.canvas.height - 12); //Make the ground
+    square = new Player(24, 40, 150, 120, document.getElementById("color1_picker").value, document.getElementById("color2_picker").value, true); //Make the player
+    ground = new GameObject(gameWindow.canvas.width, 12, "rgb(100, 100, 100)", 0, gameWindow.canvas.height - 12); //Make the ground
     //Make the text objects
     angleText = new Text("20px Consolas", "white", 10, 50);
     angleArrow = new Arrow(260, 40, "left", 16, "white");
@@ -179,7 +195,13 @@ function Update () { //Logic loop
     if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162); square.isAccel=true;} else {square.isAccel=false;}
     if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055; square.isLeftRCS=true; accelArrow.changeDir("right");} else {square.isLeftRCS=false; accelArrow.changeDir("none");}
     if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055; square.isRightRCS=true; accelArrow.changeDir("left");} else {square.isRightRCS=false;}
-    if (gameWindow.keys && (gameWindow.keys[67])) {confettiObjs = []; doConfetti = false;}
+
+    //Options checks
+    if (gameWindow.keys && gameWindow.keys[27]) {if (!escDown) {document.getElementById("options_div").style.display = document.getElementById("options_div").style.display == "none" ? "block" : "none"} escDown = true;} else {escDown = false;}
+    if (document.getElementById("confetti_check").checked) {doConfetti = true;} else {doConfetti = false; confettiObjs = []}
+    if (document.getElementById("music_check").checked) {document.getElementById("music").play()} else {document.getElementById("music").pause()}
+    if (document.getElementById("simple_shade_check").checked) {square.color2 = square.color1;} else {square.color2 = document.getElementById("color2_picker").value;}
+    if (document.getElementById("epilepsy_check").checked) {square.epilepsyMode = true;} else {square.epilepsyMode = false;}
 
     flipAngle += square.torque; //Add the current torque to the flip tracker angle
 
@@ -206,7 +228,7 @@ function Update () { //Logic loop
                     color = "rgb(200, 0, 0)";
                 }
                 //Add new confetti to the array at player's position
-                confettiObjs.push(new Player(4, 4, color, square.x, square.y));
+                confettiObjs.push(new Player(4, 4, square.x, square.y, color));
                 //Give it random x speed (half negative, half positive) and random upwards y speed
                 confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
                 confettiObjs[i].speedY = Math.random() * -10;
@@ -232,7 +254,7 @@ function Update () { //Logic loop
                 } else {
                     color = "rgb(200, 0, 0)";
                 }
-                confettiObjs.push(new Player(4, 4, color, square.x, square.y));
+                confettiObjs.push(new Player(4, 4, square.x, square.y, color));
                 confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
                 confettiObjs[i].speedY = Math.random() * -10;
                 confettiObjs[i].angle = Math.random() * 360;
@@ -302,7 +324,7 @@ function Update () { //Logic loop
                 getTime = false;
             }
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
-            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled by pressing \"c\". Reload to reenable confetti)");
+            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled in the options menu. Press \"esc\" to open it.)");
             document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
             console.log("Win");
             square.speedX = 0;
@@ -317,12 +339,12 @@ function Update () { //Logic loop
                 getTime = false;
             }
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
-            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled by pressing \"c\". Reload to reenable confetti)");
+            document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled in the options menu. Press \"esc\" to open it.)");
             document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
             if (doCrashParts) {
-                crashParts.push(new CrashPart(24, 20, square.x, square.y - (square.height / 2), false));
-                crashParts.push(new CrashPart(24, 20, square.x, square.y + (square.height / 2), false));
-                crashParts.push(new CrashPart(24, 20, square.x, square.y, true));
+                crashParts.push(new CrashPart(24, 20, square.x, square.y - (square.height / 2), square.color1, square.color2, false));
+                crashParts.push(new CrashPart(24, 20, square.x, square.y + (square.height / 2), square.color1, square.color2, false));
+                crashParts.push(new CrashPart(24, 20, square.x, square.y, square.color1, square.color2, true));
                 crashParts.forEach(part => {
                     part.angle = square.angle;
                     part.torque = square.torque;
@@ -370,6 +392,17 @@ function Update () { //Logic loop
     ground.width = gameWindow.canvas.width; 
 }
 
+function HandleSettingsChange () {
+    settingsCookieString = "";
+    if (document.getElementById("confetti_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
+    if (document.getElementById("music_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
+    if (document.getElementById("simple_shade_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
+    if (document.getElementById("epilepsy_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
+    setCookie("toggles", settingsCookieString, 9999);
+    setCookie("color1", document.getElementById("color1_picker").value, 9999);
+    setCookie("color2", document.getElementById("color2_picker").value, 9999);
+}
+
 function everyinterval(n) {
     if ((gameWindow.frameNo / n) % 1 == 0) {return true;}
     return false;
@@ -390,3 +423,34 @@ function min (a, b) {
         return a;
     }
 }
+
+function setCookie(name, value, exdays) {
+    const exdate = new Date(); //Date of expiration
+    //Set the time to be now + expiration days
+    exdate.setTime(exdate.getTime() + (exdays*24*60*60*1000));
+    let expires = "expires="+ exdate.toUTCString(); //Expiration time
+    //Set the cookie with name, value, and expiration date provided
+    document.cookie = name + "=" + value + ";" + expires + ";path=/";
+  }
+  
+  function getCookie(name) {
+    let cname = name + "="; //Add an "=" to the inputted name
+    let decodedCookie = decodeURIComponent(document.cookie); //Decoded version of the pages cookies
+    let cookieArray = decodedCookie.split(';'); //Split the pages cookies into an array
+    //For each cookie
+    for (let i = 0; i < cookieArray.length; i++) {
+      //Track the current cookie in one variable
+      let cookie = cookieArray[i];
+      //Loop through the cookie until there are no spaces infront of it
+      while (cookie.charAt(0) == ' ') {
+        cookie = cookie.substring(1);
+      }
+      //If this cookie is the one we want
+      if (cookie.indexOf(cname) == 0) {
+        //Return the cookies value
+        return cookie.substring(cname.length, cookie.length);
+      }
+    }
+    //If it wasn't found, return an empty string
+    return "";
+  }

@@ -18,7 +18,7 @@ class GameObject {
 }
 
 class Player {
-    constructor(width, height, color, x, y, isLander = false) {
+    constructor(width, height, x, y, color1, color2="#000000", isLander = false) {
         this.width = width;
         this.height = height;
         this.speedX = 0;
@@ -27,11 +27,13 @@ class Player {
         this.x = x;
         this.y = y;
         this.angle = 0;
-        this.color = color;
+        this.color1 = color1;
+        this.color2 = color2;
         this.isAccel = false;
         this.isLeftRCS = false;
         this.isRightRCS = false;
         this.isLander = isLander;
+        this.epilepsyMode = false;
         this.update = function () {
             var ctx = gameWindow.context;
             ctx.save();
@@ -46,39 +48,69 @@ class Player {
             ctx.closePath();
             if (this.isLander) {
                 const grd = ctx.createLinearGradient(this.width / -2, 0, 12, 0);
-                grd.addColorStop(0, "rgb(140, 140, 140)");
-                grd.addColorStop(0.8, "rgb(80, 80, 80)");
+                grd.addColorStop(0, this.color1);
+                grd.addColorStop(0.8, this.color2);
                 ctx.fillStyle = grd;
             } else {
-                ctx.fillStyle = this.color;
+                ctx.fillStyle = this.color1;
             }
             ctx.fill();
             if (this.isAccel && this.isLander) {
-                ctx.beginPath();
-                ctx.moveTo(this.width / -2, this.height / 2);
-                ctx.lineTo(this.width / 2, this.height / 2);
-                ctx.lineTo(0, this.height * 1.75 * max(0.75, Math.random()));
-                ctx.closePath();
-                ctx.fillStyle = Math.random() < 0.5 ? "red" : (Math.random() < 0.75 ? "orange" : "yellow");
-                ctx.fill();
+                if (this.epilepsyMode) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.width / -2, this.height / 2);
+                    ctx.lineTo(this.width / 2, this.height / 2);
+                    ctx.lineTo(0, this.height * 1.75);
+                    ctx.closePath();
+                    ctx.fillStyle = "red";
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(this.width / -2, this.height / 2);
+                    ctx.lineTo(this.width / 2, this.height / 2);
+                    ctx.lineTo(0, this.height * 1.75 * max(0.75, Math.random()));
+                    ctx.closePath();
+                    ctx.fillStyle = Math.random() < 0.5 ? "red" : (Math.random() < 0.75 ? "orange" : "yellow");
+                    ctx.fill();
+                }
             }
             if (this.isLeftRCS && this.isLander) {
-                ctx.beginPath();
-                ctx.moveTo(this.width / -2, this.height / -2);
-                ctx.lineTo(this.width * -1.5 * max(0.75, Math.random()), this.height * -0.4);
-                ctx.lineTo(this.width / -2, this.height * -0.3);
-                ctx.closePath();
-                ctx.fillStyle = Math.random() < 0.5 ? "red" : (Math.random() < 0.75 ? "orange" : "yellow");
-                ctx.fill();
+                if (this.epilepsyMode) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.width / -2, this.height / -2);
+                    ctx.lineTo(this.width * -1.5, this.height * -0.4);
+                    ctx.lineTo(this.width / -2, this.height * -0.3);
+                    ctx.closePath();
+                    ctx.fillStyle = "red";
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(this.width / -2, this.height / -2);
+                    ctx.lineTo(this.width * -1.5 * max(0.75, Math.random()), this.height * -0.4);
+                    ctx.lineTo(this.width / -2, this.height * -0.3);
+                    ctx.closePath();
+                    ctx.fillStyle = Math.random() < 0.5 ? "red" : (Math.random() < 0.75 ? "orange" : "yellow");
+                    ctx.fill();
+                }
             }
             if (this.isRightRCS && this.isLander) {
-                ctx.beginPath();
-                ctx.moveTo(this.width / 2, this.height / -2);
-                ctx.lineTo(this.width * 1.5 * max(0.75, Math.random()), this.height * -0.4);
-                ctx.lineTo(this.width / 2, this.height * -0.3);
-                ctx.closePath();
-                ctx.fillStyle = Math.random() < 0.5 ? "red" : (Math.random() < 0.75 ? "orange" : "yellow");
-                ctx.fill();
+                if (this.epilepsyMode) {
+                    ctx.beginPath();
+                    ctx.moveTo(this.width / 2, this.height / -2);
+                    ctx.lineTo(this.width * 1.5, this.height * -0.4);
+                    ctx.lineTo(this.width / 2, this.height * -0.3);
+                    ctx.closePath();
+                    ctx.fillStyle = "red";
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.moveTo(this.width / 2, this.height / -2);
+                    ctx.lineTo(this.width * 1.5 * max(0.75, Math.random()), this.height * -0.4);
+                    ctx.lineTo(this.width / 2, this.height * -0.3);
+                    ctx.closePath();
+                    ctx.fillStyle = Math.random() < 0.5 ? "red" : (Math.random() < 0.75 ? "orange" : "yellow");
+                    ctx.fill();
+                }
             }
             ctx.restore();
             /* ctx.fillStyle = "blue";
@@ -125,7 +157,7 @@ class Player {
 }
 
 class CrashPart {
-    constructor(width, height, x, y, isTop) {
+    constructor(width, height, x, y, color1, color2, isTop) {
         this.width = width;
         this.height = height;
         this.speedX = 0;
@@ -134,6 +166,8 @@ class CrashPart {
         this.x = x;
         this.y = y;
         this.angle = 0;
+        this.color1 = color1;
+        this.color2 = color2;
         this.isTop = isTop;
         this.update = function () {
             var ctx = gameWindow.context;
@@ -153,8 +187,8 @@ class CrashPart {
             }
             ctx.closePath();
             const grd = ctx.createLinearGradient(this.width / -2, 0, 12, 0);
-            grd.addColorStop(0, "rgb(140, 140, 140)");
-            grd.addColorStop(0.8, "rgb(80, 80, 80)");
+            grd.addColorStop(0, this.color1);
+            grd.addColorStop(0.8, this.color2);
             ctx.fillStyle = grd;
             ctx.fill();
             ctx.restore();

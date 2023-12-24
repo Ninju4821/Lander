@@ -24,15 +24,51 @@
             h1, p {
                 color: white;
             }
+            .options {
+                background: grey;
+                width: 35%;
+                height: 60%;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+            }
+            label {
+                padding: 4px;
+                font-weight: 100;
+            }
         </style>
     </head>
     <body onload="init()">
-        <div class="landing_info" id="info_div" style="display:none">
+        <div class="landing_info" id="info_div" style="display: none">
             <h1 id="special_header">Restart with space.</h1> <!--TODO: Add special headings depending on score ranges-->
             <p id="score_text">Score</p>
             <p id="time_text">Time</p>
             <p id="flips_text">Flips</p>
             <p id="loops_text">Loops</p>
         </div>
+        <div class="options" id="options_div" style="display: none;" onclick="HandleSettingsChange()">
+            <h1 style="color: black;">Options Menu:</h1>
+            <br>
+            <input type="checkbox" id="confetti_check" checked><label for="confetti_check">Show Confetti</label>
+            <br>
+            <br>
+            <input type="checkbox" id="music_check" checked><label for="music_check">Music</label>
+            <br>
+            <br>
+            <input type="color" id="color1_picker" value="#8c8c8c"><label for="color1_picker">Color 1</label>
+            <br>
+            <br>
+            <input type="color" id="color2_picker" value="#505050"><label for="color2_picker">Color 2</label>
+            <br>
+            <br>
+            <input type="checkbox" id="simple_shade_check"><label for="simple_shade_check">Simple Shading Mode</label>
+            <br>
+            <br>
+            <input type="checkbox" id="epilepsy_check"><label for="epilepsy_check">Epilepsy Mode</label>
+            <br>
+        </div>
+        <audio src="./Lander Main Theme.mp3" id="music"></audio>
     </body>
 </html>
