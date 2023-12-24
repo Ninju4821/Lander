@@ -14,7 +14,7 @@ var difficulty = 1; //Game difficulty
 
 //Special messages used when you land or crash
 var landingMessages = ["Well... you landed", "You do know it's supposed to be slow and straight, right?", "That's kinda good, I guess...", "Now you're getting somewhere!", "Woah, great landing!", "Almost perfect!", "Perfect, flawless, amazing!"];
-var crashMessages = ["Oh so close!", "Uhhh, I think you have the wrong game", "That's... actually kind of impressive", "You smashed it to bits!", "KABOOOM!", "Do you enjoy this? I do.", "There is no more lander."];
+var crashMessages = ["Oh so close!", "Uhhh, I think you have the wrong game", "That's... actually kind of impressive", "You smashed it to bits!", "KABOOOM!", "Who called in the ICBM?", "There is no more lander."];
 
 //Holds the game window information
 var gameWindow = {
@@ -211,7 +211,7 @@ function Update () { //Logic loop
     if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055 * (difficulty == 0 ? 0.75 : 1); square.isRightRCS=true; accelArrow.changeDir("left");} else {square.isRightRCS=false;}
 
     //Options checks
-    if (gameWindow.keys && gameWindow.keys[27]) {if (!escDown) {document.getElementById("options_div").style.display = document.getElementById("options_div").style.display == "none" ? "block" : "none"} escDown = true;} else {escDown = false;}
+    if (gameWindow.keys && gameWindow.keys[27]) {if (!escDown) {document.getElementById("options_div").style.display = document.getElementById("options_div").style.display == "none" ? "block" : "none"} escDown = true; HandleSettingsChange()} else {escDown = false;}
     if (document.getElementById("confetti_check").checked) {doConfetti = true;} else {doConfetti = false; confettiObjs = []}
     if (document.getElementById("music_check").checked) {document.getElementById("music").play()} else {document.getElementById("music").pause()}
     if (document.getElementById("simple_shade_check").checked) {square.color2 = square.color1;} else {square.color2 = document.getElementById("color2_picker").value;}
