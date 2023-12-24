@@ -10,6 +10,7 @@ var doConfetti = true; //Should confetti spawn? Disabled by "c"
 var doCrashParts = true;
 var drawLander = true;
 var escDown = false;
+var difficulty = 1;
 
 //Holds the game window information
 var gameWindow = {
@@ -49,13 +50,14 @@ var gameWindow = {
 function init () {
 
     //Get settings from cookies
-    toggledSettingString = getCookie("toggles");
-    if (toggledSettingString != "") {
-        settingArray = Array.from(toggledSettingString);
+    settingsString = getCookie("settings");
+    if (settingsString != "") {
+        settingArray = Array.from(settingsString);
         if (settingArray[0] == "t") {document.getElementById("confetti_check").checked = true;} else {document.getElementById("confetti_check").checked = false;}
         if (settingArray[1] == "t") {document.getElementById("music_check").checked = true;} else {document.getElementById("music_check").checked = false;}
         if (settingArray[2] == "t") {document.getElementById("simple_shade_check").checked = true;} else {document.getElementById("simple_shade_check").checked = false;}
         if (settingArray[3] == "t") {document.getElementById("epilepsy_check").checked = true;} else {document.getElementById("epilepsy_check").checked = false;}
+        document.getElementById("difficulty_drop").value = parseInt(settingArray[4]);
     }
     color1String = getCookie("color1");
     color2String = getCookie("color2");
@@ -113,6 +115,8 @@ function init () {
     crashParts = []; //Will hold the crash parts when summoned
     doCrashParts = true;
     drawLander = true;
+
+    difficulty = document.getElementById("difficulty_drop").value;
 }
 
 function loop () { //Internal loop
@@ -129,7 +133,7 @@ function loop () { //Internal loop
     });
 
     //Redraw the path
-    if (drawLander) {
+    if (drawLander && difficulty <= 1) {
         path.update();
     }
 
@@ -149,11 +153,15 @@ function loop () { //Internal loop
     ground.update();
 
     //Redraw the text objects
-    angleText.update();
-    angleArrow.update();
-    accelArrow.update();
-    speedText.update();
-    heightText.update();
+    if (difficulty <= 2) {
+        angleText.update();
+        speedText.update();
+        heightText.update();
+    }
+    if (difficulty <= 1) {
+        angleArrow.update();
+        accelArrow.update();
+    }
 
     crashParts.forEach(part => {
         part.newPos();
@@ -163,7 +171,7 @@ function loop () { //Internal loop
 
 function Update () { //Logic loop
     //Apply gravity to the player
-    square.speedY += gravity;
+    square.speedY += gravity * (difficulty == 0 ? 0.75 : 1);
 
     confettiObjs.forEach(confetti => { //For each confetti
         confetti.speedY += gravity; //Apply gravity
@@ -192,9 +200,9 @@ function Update () { //Logic loop
     })
 
     //Apply user input to the Lander and set the variables to display jet flames
-    if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162); square.isAccel=true;} else {square.isAccel=false;}
-    if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055; square.isLeftRCS=true; accelArrow.changeDir("right");} else {square.isLeftRCS=false; accelArrow.changeDir("none");}
-    if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055; square.isRightRCS=true; accelArrow.changeDir("left");} else {square.isRightRCS=false;}
+    if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162 * (difficulty == 0 ? 0.75 : 1)); square.isAccel=true;} else {square.isAccel=false;}
+    if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055 * (difficulty == 0 ? 0.75 : 1); square.isLeftRCS=true; accelArrow.changeDir("right");} else {square.isLeftRCS=false; accelArrow.changeDir("none");}
+    if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055 * (difficulty == 0 ? 0.75 : 1); square.isRightRCS=true; accelArrow.changeDir("left");} else {square.isRightRCS=false;}
 
     //Options checks
     if (gameWindow.keys && gameWindow.keys[27]) {if (!escDown) {document.getElementById("options_div").style.display = document.getElementById("options_div").style.display == "none" ? "block" : "none"} escDown = true;} else {escDown = false;}
@@ -326,6 +334,7 @@ function Update () { //Logic loop
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
             document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled in the options menu. Press \"esc\" to open it.)");
             document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
+            document.getElementById("difficulty_text").innerHTML = "Difficulty: " + (difficulty == 0 ? "Easy" : (difficulty == 1 ? "Normal" : (difficulty == 2 ? "Hard" : "Apollo")));
             console.log("Win");
             square.speedX = 0;
             square.speedY = 0;
@@ -341,6 +350,7 @@ function Update () { //Logic loop
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
             document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled in the options menu. Press \"esc\" to open it.)");
             document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
+            document.getElementById("difficulty_text").innerHTML = "Difficulty: " + (difficulty == 0 ? "Easy" : (difficulty == 1 ? "Normal" : (difficulty == 2 ? "Hard" : "Apollo")));
             if (doCrashParts) {
                 crashParts.push(new CrashPart(24, 20, square.x, square.y - (square.height / 2), square.color1, square.color2, false));
                 crashParts.push(new CrashPart(24, 20, square.x, square.y + (square.height / 2), square.color1, square.color2, false));
@@ -398,7 +408,8 @@ function HandleSettingsChange () {
     if (document.getElementById("music_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
     if (document.getElementById("simple_shade_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
     if (document.getElementById("epilepsy_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
-    setCookie("toggles", settingsCookieString, 9999);
+    settingsCookieString += String(document.getElementById("difficulty_drop").value);
+    setCookie("settings", settingsCookieString, 9999);
     setCookie("color1", document.getElementById("color1_picker").value, 9999);
     setCookie("color2", document.getElementById("color2_picker").value, 9999);
 }

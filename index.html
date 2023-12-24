@@ -47,6 +47,7 @@
             <p id="time_text">Time</p>
             <p id="flips_text">Flips</p>
             <p id="loops_text">Loops</p>
+            <p id="difficulty_text" style="font-size: smaller;">difficulty</p>
         </div>
         <div class="options" id="options_div" style="display: none;" onclick="HandleSettingsChange()">
             <h1 style="color: black;">Options Menu:</h1>
@@ -68,6 +69,13 @@
             <br>
             <input type="checkbox" id="epilepsy_check"><label for="epilepsy_check">Epilepsy Mode</label>
             <br>
+            <br>
+            <label for="difficulty_drop">Difficulty:&nbsp;</label><select id="difficulty_drop" value=1>
+                <option value=0>Easy</option>
+                <option value=1 selected>Normal</option>
+                <option value=2>Hard</option>
+                <option value=3>Apollo</option>
+              </select>
         </div>
         <audio src="./Lander Main Theme.mp3" id="music"></audio>
     </body>
