@@ -5,12 +5,16 @@ var endTime; //Run end time
 var getTime; //Bool used to stop the end time from changing after the landing
 var flips; //How many flips have been done?
 var flipAngle; //Tracks the angle for the flip counter
-var loops = 0;
-var doConfetti = true; //Should confetti spawn? Disabled by "c"
-var doCrashParts = true;
-var drawLander = true;
-var escDown = false;
-var difficulty = 1;
+var loops = 0; //Tracks the number of times you looped across the screen
+var doConfetti = true; //Should confetti spawn? Disabled in options
+var doCrashParts = true; //Prevents crash parts from spawning more than once per crash
+var drawLander = true; //Prevents lander from being drawn when you crash
+var escDown = false; //Prevents the options menu from spamming open/close when esc is pressed
+var difficulty = 1; //Game difficulty
+
+//Special messages used when you land or crash
+var landingMessages = ["Well... you landed", "You do know it's supposed to be slow and straight, right?", "That's kinda good, I guess...", "Now you're getting somewhere!", "Woah, great landing!", "Almost perfect!", "Perfect, flawless, amazing!"];
+var crashMessages = ["Oh so close!", "Uhhh, I think you have the wrong game", "That's... actually kind of impressive", "You smashed it to bits!", "KABOOOM!", "Do you enjoy this? I do.", "There is no more lander."];
 
 //Holds the game window information
 var gameWindow = {
@@ -113,9 +117,10 @@ function init () {
     }
 
     crashParts = []; //Will hold the crash parts when summoned
-    doCrashParts = true;
-    drawLander = true;
+    doCrashParts = true; //Allows crash parts to be summoned again
+    drawLander = true; //Allows lander to be drawn again
 
+    //Gets the difficulty
     difficulty = document.getElementById("difficulty_drop").value;
 }
 
@@ -132,7 +137,7 @@ function loop () { //Internal loop
         star.update();
     });
 
-    //Redraw the path
+    //Redraw the path if lander is being drawn and difficulty allows it
     if (drawLander && difficulty <= 1) {
         path.update();
     }
@@ -152,7 +157,7 @@ function loop () { //Internal loop
     //Redraw the ground (Do last to be on top)
     ground.update();
 
-    //Redraw the text objects
+    //Redraw the text objects if the difficulty allows it
     if (difficulty <= 2) {
         angleText.update();
         speedText.update();
@@ -163,6 +168,7 @@ function loop () { //Internal loop
         accelArrow.update();
     }
 
+    //Updates each crash parts position and draws it
     crashParts.forEach(part => {
         part.newPos();
         part.update();
@@ -170,7 +176,7 @@ function loop () { //Internal loop
 }
 
 function Update () { //Logic loop
-    //Apply gravity to the player
+    //Apply gravity to the player with difficulty scaling
     square.speedY += gravity * (difficulty == 0 ? 0.75 : 1);
 
     confettiObjs.forEach(confetti => { //For each confetti
@@ -186,11 +192,11 @@ function Update () { //Logic loop
         }
     });
 
+    //For each crash part
     crashParts.forEach(part => {
-        part.speedY += gravity;
-        //part.speedX *= 0.99;
-        //part.torque *= 0.99;
+        part.speedY += gravity * (difficulty == 0 ? 0.75 : 1); //Apply gravity (with difficulty scaling for consistency)
 
+        //Loop across screen
         if (part.x < 0) {
             part.x += gameWindow.canvas.width;
         }
@@ -199,7 +205,7 @@ function Update () { //Logic loop
         }
     })
 
-    //Apply user input to the Lander and set the variables to display jet flames
+    //Apply user input to the Lander with difficulty scaling, set the variables to display jet flames, and set accel arrow direction
     if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162 * (difficulty == 0 ? 0.75 : 1)); square.isAccel=true;} else {square.isAccel=false;}
     if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055 * (difficulty == 0 ? 0.75 : 1); square.isLeftRCS=true; accelArrow.changeDir("right");} else {square.isLeftRCS=false; accelArrow.changeDir("none");}
     if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055 * (difficulty == 0 ? 0.75 : 1); square.isRightRCS=true; accelArrow.changeDir("left");} else {square.isRightRCS=false;}
@@ -271,6 +277,7 @@ function Update () { //Logic loop
         }
     }
 
+    //Update each path point to be the next spot the Lander would be
     for (let i = 0; i < pathPoints.length; i++) {
         if (i != 0) {
             pathPoints[i] = new PathPoint(pathPoints[i - 1].x + square.speedX * 5, pathPoints[i - 1].y + (square.speedY + (gravity * i * i)) * 5, false)
@@ -307,16 +314,17 @@ function Update () { //Logic loop
         }
     })
 
+    //Detect crash part colision
     crashParts.forEach(part => {
         if (part.crashWith(ground) || part.y > gameWindow.canvas.height) {
             index = crashParts.indexOf(part);
             if (index > -1) {
-                part.y -= (part.y - ground.y) - part.height / -1.8;
-                part.speedY = -part.speedY * 0.65;
-                part.speedX *= 0.75;
-                part.torque *= 0.75;
-                part.torque += part.speedX * 0.8;
-                part.speedX *= 0.7;
+                part.y -= (part.y - ground.y) - part.height / -1.8; //Bounce it with bounce decay
+                part.speedY = -part.speedY * 0.65; //Slow its Y speed down
+                part.speedX *= 0.75; //Slow its X speed down
+                part.torque *= 0.75; //Slow down it's spinning
+                part.torque += part.speedX * 0.8; //Spin it based on X speed
+                part.speedX *= 0.7; //Speed decay as transitioned to torque
             }
         }
     })
@@ -327,6 +335,33 @@ function Update () { //Logic loop
         if (speed < 8 && Math.abs(square.angle) < 16) {
             let score = ((8 - speed + (16 - Math.abs(square.angle))) / 24) * 100;
             document.getElementById("score_text").innerHTML = "Landing Score: " + String(Math.round(score * 10) / 10);
+            var msg = "";
+            if (score > 10) {
+                if (score > 35) {
+                    if (score > 60) {
+                        if (score > 80) {
+                            if (score > 90) {
+                                if (score == 100) {
+                                    msg = landingMessages[6];
+                                } else {
+                                    msg = landingMessages[5];
+                                }
+                            } else {
+                                msg = landingMessages[4];
+                            }
+                        } else {
+                            msg = landingMessages[3];
+                        }
+                    } else {
+                        msg = landingMessages[2];
+                    }
+                } else {
+                    msg = landingMessages[1];
+                }
+            } else {
+                msg = landingMessages[0];
+            }
+            document.getElementById("special_header").innerHTML = msg;
             if (getTime) {
                 endTime = new Date();
                 getTime = false;
@@ -343,6 +378,33 @@ function Update () { //Logic loop
         } else {
             let score = Math.min(speed, Math.abs(square.angle)) / 180 * 100;
             document.getElementById("score_text").innerHTML = "Crash Score: " + String(Math.round(score * 10) / 10);
+            var msg = "";
+            if (score > 5) {
+                if (score > 30) {
+                    if (score > 65) {
+                        if (score > 80) {
+                            if (score > 90) {
+                                if (score == 100) {
+                                    msg = crashMessages[6];
+                                } else {
+                                    msg = crashMessages[5];
+                                }
+                            } else {
+                                msg = crashMessages[4];
+                            }
+                        } else {
+                            msg = crashMessages[3];
+                        }
+                    } else {
+                        msg = crashMessages[2];
+                    }
+                } else {
+                    msg = crashMessages[1];
+                }
+            } else {
+                msg = crashMessages[0];
+            }
+            document.getElementById("special_header").innerHTML = msg;
             if (getTime) {
                 endTime = new Date();
                 getTime = false;
@@ -402,7 +464,7 @@ function Update () { //Logic loop
     ground.width = gameWindow.canvas.width; 
 }
 
-function HandleSettingsChange () {
+function HandleSettingsChange () { //Set all of the settings into cookies
     settingsCookieString = "";
     if (document.getElementById("confetti_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
     if (document.getElementById("music_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
