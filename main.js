@@ -52,10 +52,10 @@ function init () {
     toggledSettingString = getCookie("toggles");
     if (toggledSettingString != "") {
         settingArray = Array.from(toggledSettingString);
-        if (settingArray[0] == "t") {document.getElementById("confetti_check").checked = true;} else {document.getElementById("confetti_check").chekced = false;}
-        if (settingArray[1] == "t") {document.getElementById("music_check").checked = true;} else {document.getElementById("music_check").chekced = false;}
-        if (settingArray[3] == "t") {document.getElementById("simple_shade_check").checked = true;} else {document.getElementById("simple_shade_check").chekced = false;}
-        if (settingArray[4] == "t") {document.getElementById("epilepsy_check").checked = true;} else {document.getElementById("epilepsy_check").chekced = false;}
+        if (settingArray[0] == "t") {document.getElementById("confetti_check").checked = true;} else {document.getElementById("confetti_check").checked = false;}
+        if (settingArray[1] == "t") {document.getElementById("music_check").checked = true;} else {document.getElementById("music_check").checked = false;}
+        if (settingArray[2] == "t") {document.getElementById("simple_shade_check").checked = true;} else {document.getElementById("simple_shade_check").checked = false;}
+        if (settingArray[3] == "t") {document.getElementById("epilepsy_check").checked = true;} else {document.getElementById("epilepsy_check").checked = false;}
     }
     color1String = getCookie("color1");
     color2String = getCookie("color2");
@@ -431,9 +431,9 @@ function setCookie(name, value, exdays) {
     let expires = "expires="+ exdate.toUTCString(); //Expiration time
     //Set the cookie with name, value, and expiration date provided
     document.cookie = name + "=" + value + ";" + expires + ";path=/";
-  }
+}
   
-  function getCookie(name) {
+function getCookie(name) {
     let cname = name + "="; //Add an "=" to the inputted name
     let decodedCookie = decodeURIComponent(document.cookie); //Decoded version of the pages cookies
     let cookieArray = decodedCookie.split(';'); //Split the pages cookies into an array
@@ -453,4 +453,4 @@ function setCookie(name, value, exdays) {
     }
     //If it wasn't found, return an empty string
     return "";
-  }
+}
