@@ -1,16 +1,16 @@
-const gravity = 0.061;
-var speedUpdates = true; //Used to stop speed from changing after the landing
-var startTime; //Run start time
-var endTime; //Run end time
-var getTime; //Bool used to stop the end time from changing after the landing
-var flips; //How many flips have been done?
-var flipAngle; //Tracks the angle for the flip counter
-var loops = 0; //Tracks the number of times you looped across the screen
-var doConfetti = true; //Should confetti spawn? Disabled in options
-var doCrashParts = true; //Prevents crash parts from spawning more than once per crash
-var drawLander = true; //Prevents lander from being drawn when you crash
-var escDown = false; //Prevents the options menu from spamming open/close when esc is pressed
-var difficulty = 1; //Game difficulty
+const gravity = 0.061;  //The gravity of the moon. (Calculated to scale based on the sizing proportions of the Lander)
+var speedUpdates = true;    //Used to stop speed from changing after the landing.   //TODO: Simplify this into an isLanded variable
+var startTime;  //Landing start time. (When the game is reset)
+var endTime;    //Landing end time. (When the Lander hits the ground)
+var getTime = true; //Tracks if we should continue to update the time.  //TODO: Simplify this into an isLanded variable
+var flips= 0;   //Number of completed flips.
+var flipAngle;  //Tracks the angle for the flip counter. (Goes up to 360 in either direction)
+var loops = 0;  //Number of times you've looped the screen.
+var doConfetti = true;  //Can confetti spawn? Can be disabled in options menu.
+var doCrashParts = true;    //Can crash parts spawn?    //TODO: Simplify this into an isLanded variable
+var drawLander = true;  //Should we continue drawing the lander?    //TODO: Simplify this into an isLanded variable
+var escDown = false;    //Prevents the options menu from spamming open/close when esc is pressed
+var difficulty = 1; //Game difficulty (Defaults to normal)
 
 //Special messages used when you land or crash
 var landingMessages = ["Well... you landed", "You do know it's supposed to be slow and straight, right?", "That's kinda good, I guess...", "Now you're getting somewhere!", "Woah, great landing!", "Almost perfect!", "Perfect, flawless, amazing!"];

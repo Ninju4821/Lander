@@ -1,3 +1,8 @@
+/*
+    For all classes in this file, see docs/Documentation.md for more information
+*/
+
+//Generic object.
 class GameObject {
     constructor(width, height, color, x, y) {
         this.width = width;
@@ -17,6 +22,7 @@ class GameObject {
     }
 }
 
+//Lander game object. Also used for confetti objects.
 class Player {
     constructor(width, height, x, y, color1, color2="#000000", isLander = false) {
         this.width = width;
@@ -156,6 +162,7 @@ class Player {
     }
 }
 
+//Object for the parts of the Lander after crashing.
 class CrashPart {
     constructor(width, height, x, y, color1, color2, isTop) {
         this.width = width;
@@ -231,6 +238,7 @@ class CrashPart {
     }
 }
 
+//Object to hold all path points and draw the player's path.
 class Path {
     constructor(points, color) {
         this.points = points;
@@ -250,6 +258,7 @@ class Path {
     }
 }
 
+//Point on the player's path
 class PathPoint {
     constructor(x, y, isEdge) {
         this.x = x;
@@ -258,6 +267,7 @@ class PathPoint {
     }
 }
 
+//Object to display text on the canvas.
 class Text {
     constructor(font, color, x, y) {
         this.x = x;
@@ -276,6 +286,7 @@ class Text {
     }
 }
 
+//Object for the rotational arrow
 class Arrow {
     constructor (x, y, dir, size, color) {
         this.x = x;
@@ -313,6 +324,8 @@ class Arrow {
     }
 }
 
+
+//Utility function to get the larger of two numbers
 function max (a, b) {
     if (b > a) {
         return b;
