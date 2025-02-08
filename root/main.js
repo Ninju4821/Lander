@@ -370,7 +370,6 @@ function Update () { //Logic loop
             document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled in the options menu. Press \"esc\" to open it.)");
             document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
             document.getElementById("difficulty_text").innerHTML = "Difficulty: " + (difficulty == 0 ? "Easy" : (difficulty == 1 ? "Normal" : (difficulty == 2 ? "Hard" : "Apollo")));
-            console.log("Win");
             square.speedX = 0;
             square.speedY = 0;
             square.torque = 0;
@@ -430,7 +429,6 @@ function Update () { //Logic loop
             square.torque = 0;
             speedUpdates = false;
             drawLander = false;
-            console.log("lose");
         }
         if (gameWindow.keys && gameWindow.keys[32]) {
             gameWindow.stop();
