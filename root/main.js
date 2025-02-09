@@ -142,7 +142,7 @@ function loop () { //Internal loop; runs 60 times per second
     });
 
     //Redraw the path if we haven't landed yet and difficulty allows it (Normal or Easy)
-    if (isLanded && difficulty <= 1) {
+    if (!isLanded && difficulty <= 1) {
         path.update();
     }
 
