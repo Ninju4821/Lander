@@ -1,5 +1,10 @@
 # Lander Changelog
 
+### v1.0.1
+ - Simplified the speedUpdates, doCrashParts, and getTime boolean variables into one isLanded variable
+ -- Note: The drawLander variable cannot be simplified due to it's relation to crashing.
+
+
 ## v1.0.0
  - Modified default colors (and other colors)
  - Added gradient shading to Lander

@@ -11,8 +11,8 @@ If you encounter any bugs, please create an Issue and I'll try to fix it ASAP. A
 
 ## Future Plans
 This game is mostly a hobbyist project released in my school, so most updates are suggestions from there, however if you post in issues with the enhancement label, I may take your idea into consideration.
-(latest version = v1.0.0)
+(latest version = v1.0.1)
 
 ## Where to play?
-Currently, this game can be played at https://ninjus-hub.startuperror.xyz/root via GitHub Pages, though a more permanent solution is currently being worked on.
-I also post games on my itch.io page: https://ninju4821.itch.io (though most projects there are either scrapped or on hold)
+Currently, this game can be played at [https://ninjus-hub.startuperror.xyz/root](https://ninjus-hub.startuperror.xyz/root) via GitHub Pages, though a more permanent solution is currently being worked on.
+I also post games on my itch.io page: [https://ninju4821.itch.io](https://ninju4821.itch.io) (though most projects there are either scrapped or on hold)

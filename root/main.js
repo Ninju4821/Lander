@@ -1,16 +1,14 @@
 const gravity = 0.061;  //The gravity of the moon. (Calculated to scale based on the sizing proportions of the Lander)
-var speedUpdates = true;    //Used to stop speed from changing after the landing.   //TODO: Simplify this into an isLanded variable
 var startTime;  //Landing start time. (When the game is reset)
 var endTime;    //Landing end time. (When the Lander hits the ground)
-var getTime = true; //Tracks if we should continue to update the time.  //TODO: Simplify this into an isLanded variable
 var flips= 0;   //Number of completed flips.
 var flipAngle;  //Tracks the angle for the flip counter. (Goes up to 360 in either direction)
 var loops = 0;  //Number of times you've looped the screen.
 var doConfetti = true;  //Can confetti spawn? Can be disabled in options menu.
-var doCrashParts = true;    //Can crash parts spawn?    //TODO: Simplify this into an isLanded variable
-var drawLander = true;  //Should we continue drawing the lander?    //TODO: Simplify this into an isLanded variable
+var drawLander = true;  //Should we continue drawing the lander?    //NOTE: Cannot be simplified into isLanded because it relies on whether or not the Lander crashed
 var escDown = false;    //Prevents the options menu from spamming open/close when esc is pressed
 var difficulty = 1; //Game difficulty (Defaults to normal)
+var isLanded = false;   //Keeps track of whether or not the lander has landed yet
 
 //Special messages used when you land or crash
 var landingMessages = ["Well... you landed", "You do know it's supposed to be slow and straight, right?", "That's kinda good, I guess...", "Now you're getting somewhere!", "Woah, great landing!", "Almost perfect!", "Perfect, flawless, amazing!"];
@@ -19,7 +17,8 @@ var crashMessages = ["Oh so close!", "Uhhh, I think you have the wrong game", "T
 //Holds the game window information
 var gameWindow = {
     canvas : document.createElement("canvas"), //Holds the canvas HTML element
-    start : function() {
+    start : function()
+    {
         //Fit the canvas to the screen
         this.canvas.width = window.innerWidth;
         this.canvas.height = window.innerHeight - 1;
@@ -43,19 +42,23 @@ var gameWindow = {
           gameWindow.keys[e.keyCode] = false;
         })
     },
-    clear : function() { //CLear the canvas
+    clear : function()
+    { //CLear the canvas
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     },
-    stop : function() { //Stop looping
+    stop : function()
+    { //Stop looping
         clearInterval(this.interval);
     }
 }
 
-function init () {
+function init ()
+{
 
     //Get settings from cookies
     settingsString = getCookie("settings");
-    if (settingsString != "") {
+    if (settingsString != "")
+    {
         settingArray = Array.from(settingsString);
         if (settingArray[0] == "t") {document.getElementById("confetti_check").checked = true;} else {document.getElementById("confetti_check").checked = false;}
         if (settingArray[1] == "t") {document.getElementById("music_check").checked = true;} else {document.getElementById("music_check").checked = false;}
@@ -68,14 +71,14 @@ function init () {
     if (color1String != "" ) {document.getElementById("color1_picker").value = color1String}
     if (color2String != "" ) {document.getElementById("color2_picker").value = color2String}
 
-    startTime = new Date(); //Get the run start time
-    getTime = true; //Allow the game to end the run
+    startTime = new Date(); //Get the run/landing start time
 
     flips = 0; //Reset flip count
-    loops = 0;
+    loops = 0; //Reset loop count
 
     gameWindow.start(); //Re-initialize the game window
 
+    //NOTE: The player object is called "square" in code as a remnant from early development of the game, this is NOT intended to be fixed
     square = new Player(24, 40, 150, 120, document.getElementById("color1_picker").value, document.getElementById("color2_picker").value, true); //Make the player
     ground = new GameObject(gameWindow.canvas.width, 12, "rgb(100, 100, 100)", 0, gameWindow.canvas.height - 12); //Make the ground
     //Make the text objects
@@ -86,18 +89,19 @@ function init () {
     heightText = new Text("20px Consolas", "white", 10, 110);
 
     //Randomize the player position, rotation, starting speed, and starting torque
-    square.angle = Math.random() > 0.5 ? Math.random() * 75 : Math.random() * -75; //Angle
-    square.speedX = Math.random() > 0.5 ? Math.random() * 8 : Math.random() * -8; //Speed
-    square.torque = Math.random() > 0.5 ? Math.random() * 1 : Math.random() * -1; //Torque
+    square.angle = Math.random() > 0.5 ? Math.random() * 75 : Math.random() * -75; //Angle (-75 to 75 degrees)
+    square.speedX = Math.random() > 0.5 ? Math.random() * 8 : Math.random() * -8; //Speed (-8 to 8 m/s; only in the x direction)
+    square.torque = Math.random() > 0.5 ? Math.random() * 1 : Math.random() * -1; //Torque (-1 to 1 degrees/frame)
     flipAngle = square.angle; //Set the flip angle to match the starting angle
-    //Position
+    //Position  //TODO: Make this snippet more readable, also make it properly spawn 15 pixels from BOTH edges
     var positionXRandNum;
     do {
         positionXRandNum = Math.random() * gameWindow.canvas.width - 15;
     } while (positionXRandNum < 15)
     square.x = positionXRandNum;
 
-    speedUpdates = true; //Allow the game to update the player speed total
+    //Resets the isLanded status
+    isLanded = false;
 
     document.getElementById("info_div").style.display = "none"; //Make the landing info clear
 
@@ -111,20 +115,20 @@ function init () {
     //Confetti variable
     confettiObjs = [];
 
+    //Generate stars randomly   //TODO: (Possibly) Add option to range stars from 0-250
     stars = [];
     for (let i = 0; i < 50; i++) {
         stars.push(new GameObject(1, 1, "white", Math.random() * gameWindow.canvas.width, Math.random() * gameWindow.canvas.height));
     }
 
     crashParts = []; //Will hold the crash parts when summoned
-    doCrashParts = true; //Allows crash parts to be summoned again
     drawLander = true; //Allows lander to be drawn again
 
-    //Gets the difficulty
+    //Gets the current difficulty
     difficulty = document.getElementById("difficulty_drop").value;
 }
 
-function loop () { //Internal loop
+function loop () { //Internal loop; runs 60 times per second
     //Clear the game window
     gameWindow.clear();
     gameWindow.frameNo += 1; //Add one to the frame counter
@@ -132,13 +136,13 @@ function loop () { //Internal loop
     //Run logic loop
     Update();
 
-    //Redraw background stars
+    //Redraw background stars (First as to be drawn in the background)
     stars.forEach(star => {
         star.update();
     });
 
-    //Redraw the path if lander is being drawn and difficulty allows it
-    if (drawLander && difficulty <= 1) {
+    //Redraw the path if we haven't landed yet and difficulty allows it (Normal or Easy)
+    if (isLanded && difficulty <= 1) {
         path.update();
     }
 
@@ -154,21 +158,22 @@ function loop () { //Internal loop
         square.update();
     }
 
-    //Redraw the ground (Do last to be on top)
+    //Redraw the ground (Do last to be on top of all but text)
     ground.update();
 
-    //Redraw the text objects if the difficulty allows it
+    //Redraw the text objects if the difficulty allows it (Hard or lower)
     if (difficulty <= 2) {
         angleText.update();
         speedText.update();
         heightText.update();
     }
+    //Draw the torque arrow if the difficulty allows it (Normal or Easy)
     if (difficulty <= 1) {
         angleArrow.update();
         accelArrow.update();
     }
 
-    //Updates each crash parts position and draws it
+    //Update each crash parts' position and draw it (Order doesn't matter as this only happens if the player crashed)
     crashParts.forEach(part => {
         part.newPos();
         part.update();
@@ -176,12 +181,12 @@ function loop () { //Internal loop
 }
 
 function Update () { //Logic loop
-    //Apply gravity to the player with difficulty scaling
+    //Apply gravity to the player with difficulty scaling (75% normal gravity on Easy)
     square.speedY += gravity * (difficulty == 0 ? 0.75 : 1);
 
     confettiObjs.forEach(confetti => { //For each confetti
         confetti.speedY += gravity; //Apply gravity
-        confetti.speedX *= 0.99; //Slow down it's horizontal speed
+        confetti.speedX *= 0.99; //Slow down it's horizontal speed by 1%
 
         //Loop across the screen
         if (confetti.x < 0) {
@@ -205,7 +210,7 @@ function Update () { //Logic loop
         }
     })
 
-    //Apply user input to the Lander with difficulty scaling, set the variables to display jet flames, and set accel arrow direction
+    //Apply user input to the Lander with difficulty scaling (75% normal accelerations on Easy), set the variables to display jet flames, and set accel arrow direction
     if (gameWindow.keys && (gameWindow.keys[38] || gameWindow.keys[87])) {square.addSpeed(0.162 * (difficulty == 0 ? 0.75 : 1)); square.isAccel=true;} else {square.isAccel=false;}
     if (gameWindow.keys && (gameWindow.keys[39] || gameWindow.keys[68])) {square.torque += 0.055 * (difficulty == 0 ? 0.75 : 1); square.isLeftRCS=true; accelArrow.changeDir("right");} else {square.isLeftRCS=false; accelArrow.changeDir("none");}
     if (gameWindow.keys && (gameWindow.keys[37] || gameWindow.keys[65])) {square.torque -= 0.055 * (difficulty == 0 ? 0.75 : 1); square.isRightRCS=true; accelArrow.changeDir("left");} else {square.isRightRCS=false;}
@@ -221,7 +226,7 @@ function Update () { //Logic loop
 
     //Check for flips
     if (flipAngle > 360) {
-        flipAngle -= 360; //Undo the flip
+        flipAngle -= 360; //Undo the flip on the tracker
         flips += 1; //Count the flip
 
         if (doConfetti) {
@@ -241,7 +246,7 @@ function Update () { //Logic loop
                 } else {
                     color = "rgb(200, 0, 0)";
                 }
-                //Add new confetti to the array at player's position
+                //Add new confetti to the array at player's position    //NOTE: Confetti use the same object as the player for simplicity, but scaled down enough to be mostly unnoticable
                 confettiObjs.push(new Player(4, 4, square.x, square.y, color));
                 //Give it random x speed (half negative, half positive) and random upwards y speed
                 confettiObjs[i].speedX = i % 2 == 0 ? Math.random() * 20 : Math.random() * -20;
@@ -251,7 +256,7 @@ function Update () { //Logic loop
                 confettiObjs[i].torque = i % 2 == 0 ? Math.random() * 25 : Math.random() * -25;
             }
         }
-    } else if (flipAngle < -360) {
+    } else if (flipAngle < -360) {  //Same as above but for negative flips
         flipAngle += 360; //Only different line. Same purpose
         flips += 1;
         startingLength = confettiObjs.length;
@@ -278,6 +283,7 @@ function Update () { //Logic loop
     }
 
     //Update each path point to be the next spot the Lander would be
+    //TODO: FIX THIS LOGIC! (see github issue 3)
     for (let i = 0; i < pathPoints.length; i++) {
         if (i != 0) {
             pathPoints[i] = new PathPoint(pathPoints[i - 1].x + square.speedX * 5, pathPoints[i - 1].y + (square.speedY + (gravity * i * i)) * 5, false)
@@ -295,7 +301,7 @@ function Update () { //Logic loop
         }
     }
 
-    //Loop square across screen
+    //Loop player across screen
     if (square.x > gameWindow.canvas.width) {
         square.x -= gameWindow.canvas.width;
         loops++;
@@ -330,6 +336,7 @@ function Update () { //Logic loop
     })
 
     //Checks if lander collides with ground
+    //TODO: Go through and comment this mess of if-statements
     if (square.crashWith(ground) || square.y > gameWindow.canvas.height) {
         document.getElementById("info_div").style.display = "block";
         if (speed < 8 && Math.abs(square.angle) < 16) {
@@ -362,10 +369,6 @@ function Update () { //Logic loop
                 msg = landingMessages[0];
             }
             document.getElementById("special_header").innerHTML = msg;
-            if (getTime) {
-                endTime = new Date();
-                getTime = false;
-            }
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
             document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled in the options menu. Press \"esc\" to open it.)");
             document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
@@ -373,7 +376,6 @@ function Update () { //Logic loop
             square.speedX = 0;
             square.speedY = 0;
             square.torque = 0;
-            speedUpdates = false;
         } else {
             let score = Math.min(speed, Math.abs(square.angle)) / 180 * 100;
             document.getElementById("score_text").innerHTML = "Crash Score: " + String(Math.round(score * 10) / 10);
@@ -404,15 +406,11 @@ function Update () { //Logic loop
                 msg = crashMessages[0];
             }
             document.getElementById("special_header").innerHTML = msg;
-            if (getTime) {
-                endTime = new Date();
-                getTime = false;
-            }
             document.getElementById("time_text").innerHTML = "Time: " + String(Math.round((endTime - startTime) / 100)/10);
             document.getElementById("flips_text").innerHTML = "Flips: " + String(flips) + (doConfetti ? "" : " (Confetti was disabled in the options menu. Press \"esc\" to open it.)");
             document.getElementById("loops_text").innerHTML = "Loops: " + String(Math.abs(loops) + (loops >= 0 ? " right" : " left"));
             document.getElementById("difficulty_text").innerHTML = "Difficulty: " + (difficulty == 0 ? "Easy" : (difficulty == 1 ? "Normal" : (difficulty == 2 ? "Hard" : "Apollo")));
-            if (doCrashParts) {
+            if (!isLanded) {
                 crashParts.push(new CrashPart(24, 20, square.x, square.y - (square.height / 2), square.color1, square.color2, false));
                 crashParts.push(new CrashPart(24, 20, square.x, square.y + (square.height / 2), square.color1, square.color2, false));
                 crashParts.push(new CrashPart(24, 20, square.x, square.y, square.color1, square.color2, true));
@@ -422,33 +420,41 @@ function Update () { //Logic loop
                     part.speedX = square.speedX + max(0.5, Math.random() * 2) * (Math.random() > 0.5 ? 1 : -1);
                     part.speedY = min(-square.speedY * 0.65, -max(0.5, Math.random() * 2));
                 });
-                doCrashParts = false;
             }
             square.speedX = 0;
             square.speedY = 0;
             square.torque = 0;
-            speedUpdates = false;
             drawLander = false;
         }
+
+        //If we haven't yet been considered to land, get the end time and set isLanded to true
+        if (!isLanded) {
+            endTime = new Date();
+            isLanded = true;
+        }
+        //If space is pressed, reset the game
         if (gameWindow.keys && gameWindow.keys[32]) {
             gameWindow.stop();
             document.getElementById("info_div").style.display = "none";
             init();
         }
+        //Make sure no flames are drawn
         square.isAccel = false;
         square.isLeftRCS = false;
         square.isRightRCS = false;
+        //Make sure the torque arrow is set to none
         accelArrow.changeDir("none");
     }
 
     //Update angle text
     angleText.changeText("Angle: " + String(Math.round(square.angle * 10) / 10) + " degrees");
+    //Update angle arrow direction
     angleArrow.changeDir(square.torque > 0 ? "right" : "left");
     if (square.torque == 0) {
         angleArrow.changeDir("none");
     }
-    //Get total speed if speedUpdates are on
-    speed = speedUpdates ? Math.round((Math.sqrt(Math.pow(square.speedY, 2) + Math.pow(square.speedX, 2))) * 10) / 10 : speed;
+    //Get total speed if it isn't yet landed.
+    speed = !isLanded ? Math.round((Math.sqrt(Math.pow(square.speedY, 2) + Math.pow(square.speedX, 2))) * 10) / 10 : speed;
     //Update speed text
     speedText.changeText("Speed: " + String(speed) + "m/s");
     //Get height from ground
