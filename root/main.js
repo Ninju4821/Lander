@@ -68,13 +68,15 @@ function init ()
         if (settingArray[2] == "t") {document.getElementById("simple_shade_check").checked = true;} else {document.getElementById("simple_shade_check").checked = false;}
         if (settingArray[3] == "t") {document.getElementById("epilepsy_check").checked = true;} else {document.getElementById("epilepsy_check").checked = false;}
         document.getElementById("difficulty_drop").value = parseInt(settingArray[4]);
-        document.getElementById("numOfPathPoints").value = parseInt(settingArray[5]);
-        document.getElementById("pathResolution").value = parseInt(settingArray[6]);
     }
     color1String = getCookie("color1");
     color2String = getCookie("color2");
     if (color1String != "" ) {document.getElementById("color1_picker").value = color1String}
     if (color2String != "" ) {document.getElementById("color2_picker").value = color2String}
+    pathPointsString = getCookie("pathPointsCookie");
+    pathResolutionString = getCookie("pathResolutionCookie");
+    if (pathPointsString != "" ) {document.getElementById("numOfPathPoints").value = pathPointsString}
+    if (pathResolutionString != "" ) {document.getElementById("pathResolution").value = pathResolutionString}
 
     startTime = new Date(); //Get the run/landing start time
 
@@ -486,11 +488,11 @@ function HandleSettingsChange () { //Set all of the settings into cookies
     if (document.getElementById("simple_shade_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
     if (document.getElementById("epilepsy_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
     settingsCookieString += String(document.getElementById("difficulty_drop").value);
-    settingsCookieString += String(document.getElementById("numOfPathPoints").value);
-    settingsCookieString += String(document.getElementById("pathResolution").value);
     setCookie("settings", settingsCookieString, 9999);
     setCookie("color1", document.getElementById("color1_picker").value, 9999);
     setCookie("color2", document.getElementById("color2_picker").value, 9999);
+    setCookie("pathPointsCookie", String(document.getElementById("numOfPathPoints").value), 9999);
+    setCookie("pathResolutionCookie", String(document.getElementById("pathResolution").value), 9999);
 }
 
 function everyinterval(n) {
