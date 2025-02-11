@@ -9,7 +9,6 @@ var drawLander = true;  //Should we continue drawing the lander?    //NOTE: Cann
 var escDown = false;    //Prevents the options menu from spamming open/close when esc is pressed
 var difficulty = 1; //Game difficulty (Defaults to normal)
 var isLanded = false;   //Keeps track of whether or not the lander has landed yet
-
 var numOfPathPoints = 360; //Number of points in the path
 var pathResolution = 1; //How many subdivisions in the path
 
@@ -292,8 +291,15 @@ function Update () { //Logic loop
         }
     }
 
+    var numberOfPathLoops = 0;
     //Update each path point to be the next spot the Lander would be if it continued on it's current trajectory
     for (let i = 0; i < pathPoints.length; i++) {
+        if (numberOfPathLoops > 2)
+        {
+            //If the path has looped twice, stop drawing it
+            pathPoints[i] = new PathPoint(0, 0, true);
+            continue;
+        }
         //Get the position of the point
         if (i != 0)
         {
@@ -302,15 +308,18 @@ function Update () { //Logic loop
             pathPoints[i] = new PathPoint(square.x, square.y, false);
         }
         
-        //Check if it is out of bounds and loop across the screen if it is
-        if (pathPoints[i].x > gameWindow.canvas.width) {
+        //Check if it is out of bounds while above ground and loop across the screen if it is
+        if (pathPoints[i].x > gameWindow.canvas.width && pathPoints[i].y < gameWindow.canvas.height)
+        {
             pathPoints[i].x = gameWindow.canvas.width;
             i++;
             pathPoints[i] = new PathPoint(0, pathPoints[i - 1].y, true);
-        } else if (pathPoints[i].x < 0) {
+            numberOfPathLoops++;
+        } else if (pathPoints[i].x < 0 && pathPoints[i].y < gameWindow.canvas.height) {
             pathPoints[i].x = 0;
             i++;
             pathPoints[i] = new PathPoint(gameWindow.canvas.width, pathPoints[i - 1].y, true);
+            numberOfPathLoops++;
         }
     }
 
