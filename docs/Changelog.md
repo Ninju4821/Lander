@@ -1,5 +1,11 @@
 # Lander Changelog
 
+### v1.1.0
+ - Fixed the bugged path for the Easy and Normal difficulties
+ - Added new settings
+ -- Number of path points setting to have a longer or shorter path (0-3600)
+ -- Path resolution to sub divide the path points and make the path more clear (1-8)
+
 ### v1.0.1
  - Simplified the speedUpdates, doCrashParts, and getTime boolean variables into one isLanded variable
  -- Note: The drawLander variable cannot be simplified due to it's relation to crashing.
