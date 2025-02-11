@@ -11,6 +11,7 @@ var difficulty = 1; //Game difficulty (Defaults to normal)
 var isLanded = false;   //Keeps track of whether or not the lander has landed yet
 var numOfPathPoints = 360; //Number of points in the path
 var pathResolution = 1; //How many subdivisions in the path
+var maxPathLoops = 2;
 
 //Special messages used when you land or crash
 var landingMessages = ["Well... you landed", "You do know it's supposed to be slow and straight, right?", "That's kinda good, I guess...", "Now you're getting somewhere!", "Woah, great landing!", "Almost perfect!", "Perfect, flawless, amazing!"];
@@ -74,8 +75,10 @@ function init ()
     if (color2String != "" ) {document.getElementById("color2_picker").value = color2String}
     pathPointsString = getCookie("pathPointsCookie");
     pathResolutionString = getCookie("pathResolutionCookie");
+    maxPathLoopsString = getCookie("maxPathLoops");
     if (pathPointsString != "" ) {document.getElementById("numOfPathPoints").value = pathPointsString}
     if (pathResolutionString != "" ) {document.getElementById("pathResolution").value = pathResolutionString}
+    if (maxPathLoopsString != "" ) {document.getElementById("pathLoops").value = pathResolutionString}
 
     startTime = new Date(); //Get the run/landing start time
 
@@ -114,6 +117,7 @@ function init ()
     //Get path information
     numOfPathPoints = document.getElementById("numOfPathPoints").value;
     pathResolution = document.getElementById("pathResolution").value;
+    maxPathLoops = document.getElementById("pathLoops").value;
     //Path variables
     pathPoints = [];
     for (let i = 0; i < numOfPathPoints * pathResolution; i++) {
@@ -294,7 +298,7 @@ function Update () { //Logic loop
     var numberOfPathLoops = 0;
     //Update each path point to be the next spot the Lander would be if it continued on it's current trajectory
     for (let i = 0; i < pathPoints.length; i++) {
-        if (numberOfPathLoops > 2)
+        if (numberOfPathLoops > maxPathLoops)
         {
             //If the path has looped twice, stop drawing it
             pathPoints[i] = new PathPoint(0, 0, true);
@@ -502,6 +506,7 @@ function HandleSettingsChange () { //Set all of the settings into cookies
     setCookie("color2", document.getElementById("color2_picker").value, 9999);
     setCookie("pathPointsCookie", String(document.getElementById("numOfPathPoints").value), 9999);
     setCookie("pathResolutionCookie", String(document.getElementById("pathResolution").value), 9999);
+    setCookie("maxPathLoops", String(document.getElementById("pathLoops").value), 9999);
 }
 
 function everyinterval(n) {

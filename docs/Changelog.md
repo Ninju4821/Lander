@@ -2,6 +2,12 @@
 
 
 
+### v1.1.2
+ - Fix Lander path looping causing it to cover the whole screen
+ - Lander path now only loops twice
+ -- Maximum path loops is now configurable in the options menu
+
+
 ### v1.1.1
  - Minor fixes involving version number updates
 

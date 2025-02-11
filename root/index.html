@@ -4,7 +4,7 @@
     <head>
         <title>Lander</title>
         <script src="objects.js?v=1.1.1"></script>
-        <script src="main.js?v=1.1.1"></script>
+        <script src="main.js?v=1.1.2"></script>
         <script>console.log("If you know what you're doing here, consider contributing to the game!"); console.log("Find the source code at https://github.com/Ninju4821/Lander");</script>
         <style>
             canvas {
@@ -89,6 +89,9 @@
             <br>
             <br>
             <label for="pathResoultion">Path Resolution&nbsp;</label><input type="range" min="1" max="8" value="1" class="pathSlider" id="pathResolution">
+            <br>
+            <br>
+            <label for="pathLoops">Maximum Path Loops&nbsp;</label><input type="range" min="1" max="8" value="2" class="pathSlider" id="pathLoops">
             <p>Note: Changing the path related variables can cause lag! If you are experiencing slow gameplay, try turning them down!</p>
         </div>
         <audio src="./Lander Main Theme.mp3" id="music"></audio>
