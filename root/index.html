@@ -29,6 +29,7 @@
                 background: grey;
                 width: 35%;
                 height: 60%;
+                overflow: scroll;
                 position: absolute;
                 top: 50%;
                 left: 50%;
@@ -39,6 +40,9 @@
             label {
                 padding: 4px;
                 font-weight: 100;
+            }
+            .pathSlider {
+                width: 65%;
             }
         </style>
     </head>
@@ -79,6 +83,13 @@
                 <option value=2>Hard</option>
                 <option value=3>Apollo</option>
               </select>
+            <br>
+            <br>
+            <label for="numOfPathPoints">Path Points&nbsp;</label><input type="range" min="0" max="3600" value="360" class="pathSlider" id="numOfPathPoints">
+            <br>
+            <br>
+            <label for="pathResoultion">Path Resolution&nbsp;</label><input type="range" min="1" max="8" value="1" class="pathSlider" id="pathResolution">
+            <p>Note: Changing the path related variables can cause lag! If you are experiencing slow gameplay, try turning them down!</p>
         </div>
         <audio src="./Lander Main Theme.mp3" id="music"></audio>
     </body>

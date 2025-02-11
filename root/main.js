@@ -10,6 +10,9 @@ var escDown = false;    //Prevents the options menu from spamming open/close whe
 var difficulty = 1; //Game difficulty (Defaults to normal)
 var isLanded = false;   //Keeps track of whether or not the lander has landed yet
 
+var numOfPathPoints = 360; //Number of points in the path
+var pathResolution = 1; //How many subdivisions in the path
+
 //Special messages used when you land or crash
 var landingMessages = ["Well... you landed", "You do know it's supposed to be slow and straight, right?", "That's kinda good, I guess...", "Now you're getting somewhere!", "Woah, great landing!", "Almost perfect!", "Perfect, flawless, amazing!"];
 var crashMessages = ["Oh so close!", "Uhhh, I think you have the wrong game", "That's... actually kind of impressive", "You smashed it to bits!", "KABOOOM!", "Who called in the ICBM?", "There is no more lander."];
@@ -65,6 +68,8 @@ function init ()
         if (settingArray[2] == "t") {document.getElementById("simple_shade_check").checked = true;} else {document.getElementById("simple_shade_check").checked = false;}
         if (settingArray[3] == "t") {document.getElementById("epilepsy_check").checked = true;} else {document.getElementById("epilepsy_check").checked = false;}
         document.getElementById("difficulty_drop").value = parseInt(settingArray[4]);
+        document.getElementById("numOfPathPoints").value = parseInt(settingArray[5]);
+        document.getElementById("pathResolution").value = parseINt(settingArray[6]);
     }
     color1String = getCookie("color1");
     color2String = getCookie("color2");
@@ -105,9 +110,12 @@ function init ()
 
     document.getElementById("info_div").style.display = "none"; //Make the landing info clear
 
+    //Get path information
+    numOfPathPoints = document.getElementById("numOfPathPoints").value;
+    pathResolution = document.getElementById("pathResolution").value;
     //Path variables
     pathPoints = [];
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < numOfPathPoints * pathResolution; i++) {
         pathPoints.push(new PathPoint(0, 0, false));
     }
     path = new Path(pathPoints, "white");
@@ -282,14 +290,17 @@ function Update () { //Logic loop
         }
     }
 
-    //Update each path point to be the next spot the Lander would be
-    //TODO: FIX THIS LOGIC! (see github issue 3)
+    //Update each path point to be the next spot the Lander would be if it continued on it's current trajectory
     for (let i = 0; i < pathPoints.length; i++) {
-        if (i != 0) {
-            pathPoints[i] = new PathPoint(pathPoints[i - 1].x + square.speedX * 5, pathPoints[i - 1].y + (square.speedY + (gravity * i * i)) * 5, false)
-        } else {
+        //Get the position of the point
+        if (i != 0)
+        {
+            pathPoints[i] = new PathPoint(pathPoints[i - 1].x + square.speedX / pathResolution, pathPoints[i - 1].y + (square.speedY + (gravity / pathResolution) * i) / pathResolution, false);
+        } else { //First point is at the Lander
             pathPoints[i] = new PathPoint(square.x, square.y, false);
         }
+        
+        //Check if it is out of bounds and loop across the screen if it is
         if (pathPoints[i].x > gameWindow.canvas.width) {
             pathPoints[i].x = gameWindow.canvas.width;
             i++;
@@ -297,7 +308,7 @@ function Update () { //Logic loop
         } else if (pathPoints[i].x < 0) {
             pathPoints[i].x = 0;
             i++;
-            pathPoints[i] = new PathPoint(gameWindow.canvas.width, pathPoints[i - 1].y + (square.speedY + (gravity * i * i)) * 5, true);
+            pathPoints[i] = new PathPoint(gameWindow.canvas.width, pathPoints[i - 1].y, true);
         }
     }
 
@@ -475,6 +486,8 @@ function HandleSettingsChange () { //Set all of the settings into cookies
     if (document.getElementById("simple_shade_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
     if (document.getElementById("epilepsy_check").checked) {settingsCookieString += "t"} else {settingsCookieString += "f"}
     settingsCookieString += String(document.getElementById("difficulty_drop").value);
+    settingsCookieString += String(document.getElementById("numOfPathPoints").value);
+    settingsCookieString += String(document.getElementById("pathResolution").value);
     setCookie("settings", settingsCookieString, 9999);
     setCookie("color1", document.getElementById("color1_picker").value, 9999);
     setCookie("color2", document.getElementById("color2_picker").value, 9999);
