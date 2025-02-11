@@ -76,9 +76,9 @@ function init ()
     pathPointsString = getCookie("pathPointsCookie");
     pathResolutionString = getCookie("pathResolutionCookie");
     maxPathLoopsString = getCookie("maxPathLoops");
-    if (pathPointsString != "" ) {document.getElementById("numOfPathPoints").value = pathPointsString}
-    if (pathResolutionString != "" ) {document.getElementById("pathResolution").value = pathResolutionString}
-    if (maxPathLoopsString != "" ) {document.getElementById("pathLoops").value = pathResolutionString}
+    if (pathPointsString != "" ) {document.getElementById("numOfPathPoints").value = parseInt(pathPointsString)}
+    if (pathResolutionString != "" ) {document.getElementById("pathResolution").value = parseInt(pathResolutionString)}
+    if (maxPathLoopsString != "" ) {document.getElementById("pathLoops").value = parseInt(pathResolutionString)}
 
     startTime = new Date(); //Get the run/landing start time
 
