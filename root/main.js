@@ -69,7 +69,7 @@ function init ()
         if (settingArray[3] == "t") {document.getElementById("epilepsy_check").checked = true;} else {document.getElementById("epilepsy_check").checked = false;}
         document.getElementById("difficulty_drop").value = parseInt(settingArray[4]);
         document.getElementById("numOfPathPoints").value = parseInt(settingArray[5]);
-        document.getElementById("pathResolution").value = parseINt(settingArray[6]);
+        document.getElementById("pathResolution").value = parseInt(settingArray[6]);
     }
     color1String = getCookie("color1");
     color2String = getCookie("color2");
