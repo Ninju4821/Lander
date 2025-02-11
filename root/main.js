@@ -107,7 +107,7 @@ function init ()
 
     //Path variables
     pathPoints = [];
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 360; i++) {
         pathPoints.push(new PathPoint(0, 0, false));
     }
     path = new Path(pathPoints, "white");
@@ -285,11 +285,15 @@ function Update () { //Logic loop
     //Update each path point to be the next spot the Lander would be
     //TODO: FIX THIS LOGIC! (see github issue 3)
     for (let i = 0; i < pathPoints.length; i++) {
-        if (i != 0) {
-            pathPoints[i] = new PathPoint(pathPoints[i - 1].x + square.speedX * 5, pathPoints[i - 1].y + (square.speedY + (gravity * i * i)) * 5, false)
-        } else {
+        //Get the position of the point
+        if (i != 0)
+        {
+            pathPoints[i] = new PathPoint(pathPoints[i - 1].x + square.speedX, pathPoints[i - 1].y + (square.speedY + gravity * i), false);
+        } else { //First point is at the Lander
             pathPoints[i] = new PathPoint(square.x, square.y, false);
         }
+        
+        //Check if it is out of bounds and loop across the screen if it is
         if (pathPoints[i].x > gameWindow.canvas.width) {
             pathPoints[i].x = gameWindow.canvas.width;
             i++;
@@ -297,7 +301,7 @@ function Update () { //Logic loop
         } else if (pathPoints[i].x < 0) {
             pathPoints[i].x = 0;
             i++;
-            pathPoints[i] = new PathPoint(gameWindow.canvas.width, pathPoints[i - 1].y + (square.speedY + (gravity * i * i)) * 5, true);
+            pathPoints[i] = new PathPoint(gameWindow.canvas.width, pathPoints[i - 1].y, true);
         }
     }
 
