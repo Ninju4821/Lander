@@ -2,6 +2,11 @@
 
 
 
+### v1.1.3
+ - Fix maxPathLoops not actually changing
+ - Make settings window actually update settings on change
+
+
 ### v1.1.2
  - Fix Lander path looping causing it to cover the whole screen
  - Lander path now only loops twice

@@ -4,7 +4,7 @@
     <head>
         <title>Lander</title>
         <script src="objects.js?v=1.1.1"></script>
-        <script src="main.js?v=1.1.2"></script>
+        <script src="main.js?v=1.1.3"></script>
         <script>console.log("If you know what you're doing here, consider contributing to the game!"); console.log("Find the source code at https://github.com/Ninju4821/Lander");</script>
         <style>
             canvas {
@@ -56,7 +56,7 @@
             <p id="difficulty_text" style="font-size: smaller;">difficulty</p>
             <p>Restart with spacebar</p>
         </div>
-        <div class="options" id="options_div" style="display: none;">
+        <div class="options" id="options_div" style="display: none;" onchange="HandleSettingsChange()">
             <h1 style="color: black;">Options Menu:</h1>
             <br>
             <input type="checkbox" id="confetti_check" checked><label for="confetti_check">Show Confetti</label>
