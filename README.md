@@ -14,5 +14,5 @@ This game is mostly a hobbyist project released in my school, so most updates ar
 (latest version = v1.1.3)
 
 ## Where to play?
-Currently, this game can be played at [ninjus-hub.startuperror.xyz/root](https://ninjus-hub.startuperror.xyz/root) via GitHub Pages, though a more permanent solution is currently being worked on.
+Currently, this game can be played at [lander.startuperror.xyz/root](https://lander.startuperror.xyz/root) via GitHub Pages, though a more permanent solution is currently being worked on.
 I also post games on my itch.io page: [ninju4821.itch.io](https://ninju4821.itch.io) (though most projects there are either scrapped or on hold)
